@@ -8,15 +8,21 @@
 </p>
 
 
-_Repository containing python scripts for generating various airfoils, including multi-element airfoils._
+_Repository containing python scripts for generating or fetching various airfoils_
 
 ---
+Planned features:
+
+* Generate NACA Airfoils
+* Fetch historical airfoils
+* Create multi-element airfoils.
+* Load a datasheet with a timeseries of wind speeds and angles of attacks, and find the best performing airfoil in terms of lift-to-drag ratio.
 
 
 WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
+I would like to turn this into a full Python package at some point
 
-
-Main window:
+Currently, the main window looks like this:
 
 <img src="./doc/gui.png" width="700">
 
