@@ -26,3 +26,11 @@ Currently, the main window looks like this:
 
 <img src="./doc/gui.png" width="700">
 
+
+# How to use
+
+```python
+from foils import NACA
+
+NACA('2412')
+```
