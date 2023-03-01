@@ -112,6 +112,6 @@ Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroeng
 
 ## License
 
-This project is licensed under an MIT License - see the LICENSE.md file for details
+This project is licensed under a GNU GENERAL PUBLIC LICENSE - see the LICENSE.md file for details
 
 
