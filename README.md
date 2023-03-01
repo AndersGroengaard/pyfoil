@@ -17,7 +17,7 @@
 
 [![Generic badge](https://img.shields.io/badge/Python-3.9-blue)]()
 [![Generic badge](https://img.shields.io/badge/version-0.1.0_a-green)]()
-
+![Size](https://img.shields.io/github/repo-size/AndersGroengaard/pyfoil)
 </center>
 
 <br /><br />
