@@ -92,6 +92,7 @@ from naca import NACA
 
 # NACA 4-Digit airfoil:
 airfoil = NACA("2310")
+pts = airfoil.pts()
 airfoil.plot()
 airfoil.save()
 
@@ -103,6 +104,16 @@ airfoil.save()
  
 ```
 
+If you want to generate and plot multiple airfoils from a list you could go:
+
+```python
+from naca import NACAs, PlotFoil
+
+my_foils = ['2312', '23123', '5212']
+
+foils = NACAs.generate_NACA_foils(my_foils)
+PlotFoil.all_from_list(foils)
+```
 
 ## Authors
 
