@@ -41,7 +41,8 @@ _Repository containing python scripts for generating or fetching various airfoil
 <h2 id="about-the-project"> :pencil: About The Project</h2>
 
 <p align="justify"> 
-  Iorem Ipsum
+  NB: WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
+I would like to turn this into a full Python package at some point
 </p>
 
 
@@ -61,8 +62,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 * Load a datasheet with a timeseries of wind speeds and angles of attacks, and find the best performing airfoil in terms of lift-to-drag ratio.
 
 
-NB: WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
-I would like to turn this into a full Python package at some point
+
 
 Currently, the main window looks like this:
 
