@@ -82,13 +82,21 @@ Currently, the main window looks like this:
 
 ## How to use
 
-To create a NACA 2412 Airfoil and plot it, you could write:
+To create a 4 and 5 digit NACA airfoils, plotting them and saving them, you could write (See also the examply.py file):
 
 ```python
 
-from foils import NACA
+from naca import NACA
 
-airfoil = NACA('24012', gridPts=100)
+# NACA 4-Digit airfoil:
+airfoil = NACA("2310")
 airfoil.plot()
+airfoil.save()
+
+
+# NACA 5-Digit airfoil:
+airfoil = NACA("23116")
+airfoil.plot()
+airfoil.save()
  
 ```
