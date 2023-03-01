@@ -1,3 +1,5 @@
+
+import os
 import numpy as np
 from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
@@ -24,7 +26,7 @@ class NACA:
         |      NACAno (str) : 'NACA profile to be used, fx '2410'             |
         |                                                                     |
         |  OPTIONAL:                                                          |
-        |      gridPts (int) : Number of points to be plotted, fx 100         |
+        |      n_pts (int) : Number of points to be plotted, fx 100           |
         |      includeTE (bool) : True or False for including round           |
         |                         trailing edge                               |
         |      TE (float):   Trailing Edge placement as relative to chord     |
@@ -33,12 +35,13 @@ class NACA:
         
         """
         self.NACAnr = NACAnr
-        self.gridPts = kwargs.get("gridPts", 100)
+        self.name = 'NACA'+ self.NACAnr
+        self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
         
         
-        self.x = np.linspace(0, 1, self.gridPts)
+        self.x = np.linspace(0, 1, self.n_pts)
         
         if self.NACAnr.isnumeric():
             
@@ -55,8 +58,15 @@ class NACA:
             
         else:
             raise Exception("Sorry, a NACA number only contains digits")
+       
+            
+    def __str__(self):
+        return f'A {self.name} airfoil from {self.n_pts} points'
+
+    def __repr__(self):
+        return f'NACA(\'{self.NACAnr}\', n_pts={self.n_pts}, includeTE={self.includeTE}, TE={self.TE})'
         
-        
+    
     def four_digit(self):
         """
         -----------------------------------------------------------------------
@@ -146,13 +156,13 @@ class NACA:
  
         if self.includeTE:
             te_pts = int(np.size(self.yt) * self.TE)
-            self.yt =  np.delete(self.yt, np.arange(te_pts, self.gridPts))
-            theta = np.delete(theta, np.arange(te_pts, self.gridPts))
-            yc = np.delete(self.yc, np.arange(te_pts, self.gridPts))
-            self.x = np.delete(self.x, np.arange(te_pts, self.gridPts))
+            self.yt =  np.delete(self.yt, np.arange(te_pts, self.n_pts))
+            theta = np.delete(theta, np.arange(te_pts, self.n_pts))
+            yc = np.delete(self.yc, np.arange(te_pts, self.n_pts))
+            self.x = np.delete(self.x, np.arange(te_pts, self.n_pts))
             x_te = np.linspace(np.pi/2 - -theta[-1], 
                                -np.pi / 2 + theta[-1], 
-                               2*(self.gridPts - len(self.x))) # Angles
+                               2*(self.n_pts - len(self.x))) # Angles
             TEx = self.yt[-1] * np.cos(x_te) + self.x[-1]                      # Trailing edge x-coordinates, parametric circle equation    
             TEy = self.yt[-1] * np.sin(x_te) + yc[-1]                          # Trailing edge y-coordinates, Parametric circle equation    
  
@@ -186,7 +196,19 @@ class NACA:
         ax.plot(self.pts[:,0], self.pts[:,1], color='blue', linestyle='solid', linewidth=1)
         ax.axis('equal')        
         
-
+        
+    def save(self, output_folder = r'./export_folder/'):
+        """
+        -----------------------------------------------------------------------
+        | Method for saving the foil created by this class                    |
+        -----------------------------------------------------------------------
+        |  output_folder (str) : Full path to the output folder of the foil   |
+        |                        file. Default to './export_folder/'          |
+        |_____________________________________________________________________|
+        """
+        
+        output_path = os.path.join(output_folder, self.NACAnr+'.txt')
+        np.savetxt( output_path, self.pts, delimiter=' ', fmt='%1.3f')
 
 
 
@@ -254,7 +276,7 @@ class NACAs:
         """
         nacafoils = []
         for f in nacanrs:
-            naca_airfoil = NACA(f, includeTE=False, gridPts=100)
+            naca_airfoil = NACA(f, includeTE=False, n_pts=100)
             nacafoils.append(naca_airfoil)   
         return nacafoils
     
@@ -281,11 +303,24 @@ class PlotFoil:
             
         ax.axis('equal')        
           
-      
-        
+     
+
+
+
+ 
+
+
+ 
+
 #nacas = getNACAs()
-foils = NACAs.makeall_NACA5()
-PlotFoil.all_from_list(foils)
+
+
+
+#foils = NACAs.makeall_NACA5()
+#PlotFoil.all_from_list(foils)
+
+
+
 #test2 = NACAs.makeall_NACA4nrs()
 #nacas.generate_NACA_foils()
 
