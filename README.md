@@ -42,7 +42,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 <h2 id="about"> :clipboard: About</h2>
  
 <p align="justify"> 
-  Iorem Ipsim
+   The intended purpose of this package is to serve as a tool to find the best airfoil shape for your engineering application.
 </p>
 
 
