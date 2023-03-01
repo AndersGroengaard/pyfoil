@@ -75,8 +75,13 @@ Currently, the main window looks like this:
 
 ## How to use
 
+To create a NACA 2412 Airfoil and plot it, you could write:
+
 ```python
+
 from foils import NACA
 
-NACA('2412')
+airfoil = NACA('24012', gridPts=100)
+airfoil.plot()
+ 
 ```
