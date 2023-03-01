@@ -66,7 +66,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 * Load a datasheet with a timeseries of wind speeds and angles of attacks, and find the best performing airfoil in terms of lift-to-drag ratio.
 
 <!-- Limitations -->
-<h2 id="limitations"> :warning: Limitations</h2>
+<h2 id="limitations"> :warning:  Limitations  :warning: </h2>
  
 <p align="justify"> 
    WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
@@ -82,9 +82,9 @@ Currently, the main window looks like this:
 
 <br/><br/>
 
-## How to use
+## :man_technologist: How to use :woman_technologist: 
 
-To create a 4 and 5 digit NACA airfoils, plotting them and saving them, you could write (See also the examply.py file):
+To create 4 and 5 digit NACA airfoil pts, and also plot and save them, you could write (See also the example.py file):
 
 ```python
 
