@@ -102,3 +102,16 @@ airfoil.plot()
 airfoil.save()
  
 ```
+
+
+## Authors
+
+Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroengaard)
+
+ 
+
+## License
+
+This project is licensed under an MIT License - see the LICENSE.md file for details
+
+
