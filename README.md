@@ -92,9 +92,15 @@ from naca import NACA
 
 # NACA 4-Digit airfoil:
 airfoil = NACA("2310")
-pts = airfoil.pts()
+
+# Retrieve the individual points:
+pts = airfoil.pts 
+
+# Plot the airfoil:
 airfoil.plot()
-airfoil.save()
+
+# Save the points to a .txt file 
+airfoil.save()  
 
 
 # NACA 5-Digit airfoil:
