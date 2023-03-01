@@ -43,6 +43,8 @@ _Repository containing python scripts for generating or fetching various airfoil
  
 <p align="justify"> 
    The intended purpose of this package is to serve as a tool to find the best airfoil shape for your engineering application.
+ 
+   I hope you make some power outputting wind turbines  , and energy-efficient vehicles :airplane: so we can save the planet :earth_africa: :-)
 </p>
 
 
@@ -54,7 +56,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 
 <!-- Features -->
 <h2 id="features"> :dart: FEATURES </h2>
-* Generate NACA Airfoils
+* Generate one, more or all NACA Airfoils.
 
 <!-- Features -->
 <h2 id="planned-features"> :goal_net: PLANNED FEATURES </h2>
