@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
-
+import matplotlib
 # =============================================================================
 # class DimensionAirfoil():
 #         """
@@ -21,7 +21,7 @@ class NACA:
         |  Class for creating a NACA airfoil                                  |
         -----------------------------------------------------------------------
         |  INPUT:                                                             |
-        |      NACAno (str) : '2410'     # NACA profile to be used            |
+        |      NACAno (str) : 'NACA profile to be used, fx '2410'             |
         |                                                                     |
         |  OPTIONAL:                                                          |
         |      gridPts (int) : Number of points to be plotted, fx 100         |
@@ -51,7 +51,7 @@ class NACA:
             else:
                 raise Exception("Sorry, input NACA number must be a 4 or 5 digit ")
                 
-            self.calculate_surface_points()
+            self.calculate_thickness_distribution()
             
         else:
             raise Exception("Sorry, a NACA number only contains digits")
@@ -61,6 +61,7 @@ class NACA:
         """
         -----------------------------------------------------------------------
         | Method for creating the four digit NACA Airfoil                     |
+        -----------------------------------------------------------------------
         | The first digit is the maximum camber.                              |
         | The second digit is the relative position of the maximum camber.    |
         | The last two digits are the maximum thickness.                      |
@@ -73,9 +74,9 @@ class NACA:
         """
         
         # Extract values values from the NACA string
-        M = float(self.NACAnr[0])/100                                            # Maximum camber percentage
-        P = float(self.NACAnr[1])/10                                             # Toppoint as fraction of chord
-        self.T = float(self.NACAnr[2:4])/100                                    # Max thickness
+        M = float(self.NACAnr[0])/100                                          # Maximum camber percentage
+        P = float(self.NACAnr[1])/10                                           # Toppoint as fraction of chord
+        self.T = float(self.NACAnr[2:4])/100                                   # Max thickness
         
   
         x1, x2 = np.split(self.x, [int(P*len(self.x))])
@@ -93,14 +94,15 @@ class NACA:
         """
         -----------------------------------------------------------------------
         | Method for creating the five digit NACA Airfoil                     |
+        -----------------------------------------------------------------------
         |
+        | values for P, M and K taken from : 
+            https://web.stanford.edu/~cantwell/AA200_Course_Material/The%20NACA%20airfoil%20series.pdf
         -----------------------------------------------------------------------
         """
-        print("Creating five digit NACA Airfoil")  
+        print("Creating five digit NACA Airfoil: "+self.NACAnr)  
   
-        if int(self.NACAnr[2]) in (0,1):
-            print("Acceptable digit")
-        else:
+        if not int(self.NACAnr[2]) in (0,1):
             raise ValueError('Third digit in a 5-digit NACA Airfoil should be 1 or 0')
             
         P = 5 * float(self.NACAnr[1]) / 100  # Top point as fraction of chord
@@ -129,7 +131,7 @@ class NACA:
         self.dyc_dx = ((k1/6)*(3*self.x**2-6*m*self.x+m**2*(3-m)))*(self.x<P)+(-1*((k1*m**3)/6))*(self.x >= P)
 
 
-    def calculate_surface_points(self):
+    def calculate_thickness_distribution(self):
         """
         -----------------------------------------------------------------------
         | Method for calculating the surface points of a NACA Airfoil         |
@@ -140,24 +142,24 @@ class NACA:
         
         a = np.array([0.2969, -0.1260, -0.3516, 0.2843, -0.1036])
    
-        self.yt_ini = 5*self.T*(a[0]*np.sqrt(self.x) + a[1]*self.x + a[2]*(self.x**2) + a[3]*(self.x**3) + a[4]*(self.x**4))
+        self.yt = 5*self.T*(a[0]*np.sqrt(self.x) + a[1]*self.x + a[2]*(self.x**2) + a[3]*(self.x**3) + a[4]*(self.x**4))
  
         if self.includeTE:
-            te_pts = int(np.size(self.yt_ini) * self.TE)
-            self.yt =  np.delete(self.yt_ini, np.arange(te_pts, self.gridPts))
+            te_pts = int(np.size(self.yt) * self.TE)
+            self.yt =  np.delete(self.yt, np.arange(te_pts, self.gridPts))
             theta = np.delete(theta, np.arange(te_pts, self.gridPts))
             yc = np.delete(self.yc, np.arange(te_pts, self.gridPts))
-            x = np.delete(self.x, np.arange(te_pts, self.gridPts))
+            self.x = np.delete(self.x, np.arange(te_pts, self.gridPts))
             x_te = np.linspace(np.pi/2 - -theta[-1], 
                                -np.pi / 2 + theta[-1], 
-                               2*(self.gridPts - len(x))) # Angles
-            TEx = self.yt[-1] * np.cos(x_te) + x[-1]                           # Trailing edge x-coordinates, parametric circle equation    
+                               2*(self.gridPts - len(self.x))) # Angles
+            TEx = self.yt[-1] * np.cos(x_te) + self.x[-1]                      # Trailing edge x-coordinates, parametric circle equation    
             TEy = self.yt[-1] * np.sin(x_te) + yc[-1]                          # Trailing edge y-coordinates, Parametric circle equation    
  
-        xu = x  - self.yt*np.sin(theta)                                        # Upper surface points
-        yu = yc + self.yt*np.cos(theta)                                        # Upper surface points
-        xl = x  + self.yt*np.sin(theta)                                        # Lower surface points
-        yl = yc - self.yt*np.cos(theta)                                        # Lower surface points      
+        xu = self.x  - self.yt*np.sin(theta)                                   # Upper surface points
+        yu = self.yc + self.yt*np.cos(theta)                                   # Upper surface points
+        xl = self.x  + self.yt*np.sin(theta)                                   # Lower surface points
+        yl = self.yc - self.yt*np.cos(theta)                                   # Lower surface points      
  
         if self.includeTE:
             Pts_x = np.concatenate((xu, TEx, np.flip(xl)))
@@ -171,9 +173,14 @@ class NACA:
 
     
     def plot(self):
+        """
+        -----------------------------------------------------------------------
+        | Method for plotting the foil created by this class                  |
+        -----------------------------------------------------------------------
+        """
         fig = plt.figure(figsize=(7, 5))
         ax = fig.add_subplot(111)
-        ax.plot(self.x, self.yt_ini, color='green', linestyle='dashed', linewidth=0.5)
+        ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
       #  ax.plot(xu, yu, color='blue', linestyle='solid', linewidth=1)
        # ax.plot(xl, yl, color='blue', linestyle='solid', linewidth=1)
         ax.plot(self.pts[:,0], self.pts[:,1], color='blue', linestyle='solid', linewidth=1)
@@ -187,9 +194,103 @@ class NACA:
 
 
 
+class NACAs:
+    
+    def __init__(self, **kwargs):
+        self.nacanrs = []
+        self.nacafoils = []
+      
         
+    @staticmethod     
+    def makeall_NACA4nrs():
+        """
+        -----------------------------------------------------------------------
+        | Method for making all the realistic NACA 4 numbers                  |
+        -----------------------------------------------------------------------
+        """
+        naca4nrs = []
+        for m in range(10):
+            for p in range(1,10):
+                for t in range(1,40):
+                    if t < 10:
+                        t = "0"+str(t)
+                    else:
+                        t = str(t)
+                    nacanumber = str(m)+str(p)+t
+               #     print(nacanumber)
+                    naca4nrs.append(nacanumber)
+        return naca4nrs
+                    
+    
+    @staticmethod
+    def makeall_NACA5nrs():
+        """
+        -----------------------------------------------------------------------
+        | Method for making all the realistic NACA 5 numbers                  |
+        -----------------------------------------------------------------------
+        """
+        naca5nrs = []
+        for l in range(1,7):
+            for p in range(3,5):
+                for q in range(2):
+                    for t in range(1,40):
+                        if t < 10:
+                            t = "0"+str(t)
+                        else:
+                            t = str(t)
+                        nacanumber = str(l)+str(p)+str(q)+t
+                      #  print(nacanumber)
+                        naca5nrs.append(nacanumber)
+        return naca5nrs
+    
+    
+    @staticmethod    
+    def generate_NACA_foils(nacanrs):
+        """
+        -----------------------------------------------------------------------
+        | Method for generating the objects of all the NACA 4- and 5- digit   |
+        | foils supplied in the input list of strings                         |
+        -----------------------------------------------------------------------
+        """
+        nacafoils = []
+        for f in nacanrs:
+            naca_airfoil = NACA(f, includeTE=False, gridPts=100)
+            nacafoils.append(naca_airfoil)   
+        return nacafoils
+    
+    @staticmethod
+    def makeall_NACA5():
+        naca5nrs = NACAs.makeall_NACA5nrs()
+        naca5s = NACAs.generate_NACA_foils(naca5nrs)
+        return naca5s
 
 
+class PlotFoil: 
+    def all_from_list(foils):
+        fig = plt.figure(figsize=(7, 5))
+        ax = fig.add_subplot(111)
+
+        n = len(foils)
+        color = matplotlib.cm.rainbow(np.linspace(0, 1, n))
+
+        i = 0
+        for _, c in zip(range(n), color):
+           #plt.plot(x, y, c=c)
+           ax.plot(foils[i].pts[:,0], foils[i].pts[:,1], color=c, linestyle='solid', linewidth=1)
+           i +=1
+            
+        ax.axis('equal')        
+          
+      
+        
+#nacas = getNACAs()
+foils = NACAs.makeall_NACA5()
+PlotFoil.all_from_list(foils)
+#test2 = NACAs.makeall_NACA4nrs()
+#nacas.generate_NACA_foils()
+
+#len(nacas.nacafoils)
+print("Done")
 # =============================================================================
 #         
 # =============================================================================
@@ -211,9 +312,21 @@ class NACA:
 # =============================================================================
 
 
-airfoil = NACA('24012', includeTE=True, gridPts=10000)
-airfoil.plot()
+
+
+
     
+#airfoil.plot()
+#yc = airfoil.yc  
+# =============================================================================
+# a = np.array([0.2969, -0.1260, -0.3516, 0.2843, -0.1036])
+# x = np.linspace(0, 1, 100)
+#      
+# x1, x2 = np.split(x, [int(P*len(self.x))])
+#     
+# yt1 = a[0]*np.sqrt(x)+a[1] +a[2]*x**2 + a[3]*x**3
+# yt2 = d[0]+d[1]*(1-x)+d[2]*(1-x)**2 + d[3]*(1-x)**3
+# =============================================================================
 # =============================================================================
 # t1 = time.time()
 # total = t1-t0
@@ -235,6 +348,24 @@ airfoil.plot()
 
 
 
+
+# =============================================================================
+#     def modified(self):
+#         """
+#         -----------------------------------------------------------------------
+#         Explanation:
+#         fx NACA 0012-64
+#         After dash:
+#             - First digit: Roundedness of the nose. 
+#                 A value of 6 is the same as the original
+#                 A value of 0 indicates a sharp leading edge. 
+#                 A value larger than 6 produces a more rounded nose
+#             - Second digit: Location of maximum thickness in tenths of chord.
+#                 default is 30% back from the leading edge. 
+#                 If digit is 4 then it is 40%  
+#         -----------------------------------------------------------------------        
+#         """
+# =============================================================================
 
 
 
