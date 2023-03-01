@@ -31,21 +31,21 @@ _Repository containing python scripts for generating or fetching various airfoil
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project"> ➤ About The Project</a></li>
+    <li><a href="#about"> ➤ About The Project</a></li>
     <li><a href="#features"> ➤ Features</a></li>
     <li><a href="#planned-features"> ➤ Planned Features</a></li>
+     <li><a href="#limitations"> ➤ Limitations</a></li>
   </ol>
 </details>
  
-
-
 <!-- ABOUT THE PROJECT -->
-<h2 id="about-the-project"> :pencil: About The Project</h2>
-
+<h2 id="about"> :clipboard: About</h2>
+ 
 <p align="justify"> 
-  NB: WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
-I would like to turn this into a full Python package at some point
+  Iorem Ipsim
 </p>
+
+
 
 
 
@@ -53,16 +53,23 @@ I would like to turn this into a full Python package at some point
 
 
 <!-- Features -->
-<h2 id="features"> :pencil: Features</h2>
+<h2 id="features"> :dart: FEATURES </h2>
 * Generate NACA Airfoils
 
 <!-- Features -->
-<h2 id="planned-features"> :pencil: Planned Features</h2>
+<h2 id="planned-features"> :goal_net: PLANNED FEATURES </h2>
 
 * Fetch historical airfoils
 * Create multi-element airfoils.
 * Load a datasheet with a timeseries of wind speeds and angles of attacks, and find the best performing airfoil in terms of lift-to-drag ratio.
 
+<!-- Limitations -->
+<h2 id="limitations"> :warning: Limitations</h2>
+ 
+<p align="justify"> 
+   WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
+I would like to turn this into a full Python package at some point
+</p>
 
 
 
