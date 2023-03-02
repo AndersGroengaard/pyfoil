@@ -117,8 +117,10 @@ airfoil.plot()
 
 # Save the points to a .txt file 
 airfoil.save()  
+```
+Likewise for a 5-digit NACA airfoil:
 
-
+```python
 # NACA 5-Digit airfoil:
 airfoil = NACA("23116")
 airfoil.plot()
