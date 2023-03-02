@@ -40,7 +40,7 @@ class NACA:
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
         
-        
+        self.T = float(self.NACAnr[-2:])/100                                   # Max thickness
         self.x = np.linspace(0, 1, self.n_pts)
         
         if self.NACAnr.isnumeric():
@@ -86,7 +86,7 @@ class NACA:
         # Extract values values from the NACA string
         M = float(self.NACAnr[0])/100                                          # Maximum camber percentage
         P = float(self.NACAnr[1])/10                                           # Toppoint as fraction of chord
-        self.T = float(self.NACAnr[2:4])/100                                   # Max thickness
+ 
         
   
         x1, x2 = np.split(self.x, [int(P*len(self.x))])
@@ -116,7 +116,6 @@ class NACA:
             raise ValueError('Third digit in a 5-digit NACA Airfoil should be 1 or 0')
             
         P = 5 * float(self.NACAnr[1]) / 100  # Top point as fraction of chord
-        self.T = float(self.NACAnr[3:5]) / 100  # Max thickness
 
         if int(self.NACAnr[2])==0:
             p = np.array([0.05, 0.1, 0.15, 0.2, 0.25])
@@ -139,6 +138,27 @@ class NACA:
             raise ValueError
             
         self.dyc_dx = ((k1/6)*(3*self.x**2-6*m*self.x+m**2*(3-m)))*(self.x<P)+(-1*((k1*m**3)/6))*(self.x >= P)
+
+
+    def six_series(self):
+        a = 0.3
+        b = 1.0           
+        cl = 1;
+        
+        g = -1/(b-a) * ( a**2 * (0.5* np.log(a) -0.25) - b**2 * (0.5 * np.log(b) - 0.25) )   
+         
+        h = 0
+        if 0 <= a < 1:
+            h+= 1/(b-a) * (0.5*(1-a)**2 * np.log(1-a))                 
+        if 0 <= b < 1:         
+            h-= (0.5*(1-b)**2)*np.log(1-b) + 0.25*(1-b)**2 
+        if 0 <= a < 1:    
+            h-= 0.25*(1-a)**2
+        h += g
+        
+        y  = cl/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-x)**2* np.log(abs(a-x)) - 0.5*(b-x)**2*np.log(abs(b-x)) + 0.25*(b-x)**2 - 0.25*(a-x)**2) - x*np.log(x) + g - h*x) 
+    
+        pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
 
 
     def calculate_thickness_distribution(self):
@@ -267,7 +287,7 @@ class NACAs:
     
     
     @staticmethod    
-    def generate_NACA_foils(nacanrs):
+    def generate_NACA_foils(nacanrs : list, n_pts=100):
         """
         -----------------------------------------------------------------------
         | Method for generating the objects of all the NACA 4- and 5- digit   |
@@ -306,36 +326,45 @@ class PlotFoil:
      
 
 
+# NACA 6-series:
+# "When the mean-line designation is not given, it is understood that 
+# the uniform-load mean line (a= 1.0) has been used." 
+
+
+#65,3-218, a=O.5, 
+
+
+x = np.linspace(0, 1, 100)
 
  
-
-
+a = 0.3
+b = 1.0  # caution for NON-unity entries change the equation for h
  
+cl = 1;
 
-#nacas = getNACAs()
-
-
-
-#foils = NACAs.makeall_NACA5()
-#PlotFoil.all_from_list(foils)
+g = -1/(b-a) * ( a**2 * (0.5* np.log(a) -0.25) - b**2 * (0.5 * np.log(b) - 0.25) )   
 
 
+h = 0
+if 0 <= a < 1:
+    h+= 1/(b-a) * (0.5*(1-a)**2 * np.log(1-a))                 
+if 0 <= b < 1:         
+    h-= (0.5*(1-b)**2)*np.log(1-b) + 0.25*(1-b)**2 
+if 0 <= a < 1:    
+    h-= 0.25*(1-a)**2
+h += g
 
-#test2 = NACAs.makeall_NACA4nrs()
-#nacas.generate_NACA_foils()
+y  = cl/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-x)**2* np.log(abs(a-x)) - 0.5*(b-x)**2*np.log(abs(b-x)) + 0.25*(b-x)**2 - 0.25*(a-x)**2) - x*np.log(x) + g - h*x) 
 
-#len(nacas.nacafoils)
-print("Done")
-# =============================================================================
-#         
-# =============================================================================
- 
- 
+y = np.concatenate([y, -1*np.flip(y)])
+x = np.concatenate([x, np.flip(x)])
 
-
-
-
-
+pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
+fig = plt.figure(figsize=(7, 5))
+ax = fig.add_subplot(111)
+ax.plot(pts[:,0], pts[:,1], color='blue', linestyle='solid', linewidth=1)
+ax.axis('equal')        
+plt.show()
 # =============================================================================
 # 
 # =============================================================================
