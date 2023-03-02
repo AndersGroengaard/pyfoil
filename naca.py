@@ -17,6 +17,8 @@ import matplotlib
 
 class NACA:
     
+    __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x')
+    
     def __init__(self, NACAnr, **kwargs):
         """
         -----------------------------------------------------------------------
@@ -39,8 +41,9 @@ class NACA:
         self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
-        
+ 
         self.T = float(self.NACAnr[-2:])/100                                   # Max thickness
+ 
         self.x = np.linspace(0, 1, self.n_pts)
         
         if self.NACAnr.isnumeric():
