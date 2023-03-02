@@ -15,17 +15,79 @@ import matplotlib
 # =============================================================================
 
 
-class NACA:
+class Foil:
+    """
+    -----------------------------------------------------------------------
+    | Parent class for all types of foils
+    -----------------------------------------------------------------------
+    """
     
-    __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x')
+    def __init__(self, name):
+        self.name = name
+
+    def plot(self):
+        """
+        -----------------------------------------------------------------------
+        | Method for plotting the foil created by this class                  |
+        -----------------------------------------------------------------------
+        """
+        fig = plt.figure(figsize=(7, 5))
+        ax = fig.add_subplot(111)
+       # ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
+        ax.plot(self.pts[:,0], self.pts[:,1], color='blue', linestyle='solid', linewidth=1)
+        ax.axis('equal')        
+        ax.set_title(self.name)
+        
+        
+    def save(self, output_folder = r'./export_folder/'):
+        """
+        -----------------------------------------------------------------------
+        | Method for saving the foil created by this class                    |
+        -----------------------------------------------------------------------
+        |  output_folder (str) : Full path to the output folder of the foil   |
+        |                        file. Default to './export_folder/'          |
+        |_____________________________________________________________________|
+        """
+        
+        output_path = os.path.join(output_folder, self.name+'.dat')
+        np.savetxt(output_path, self.pts, delimiter=' ', fmt='%1.5f')
+
+
+
+
+ 
+class FromDatabase(Foil):
+    def __init__(self, name):
+        super().__init__(name)
+        """
+        -----------------------------------------------------------------------
+        |  Class for import airfoil points from a database based on           |
+        |  .dat files                                                         |
+        -----------------------------------------------------------------------
+        |  INPUT:                                                             |
+        |      name (str) : Name of the foil to import, fc "risoe_a_21"       |
+        |                                                                     |
+        |_____________________________________________________________________|
+        """
+
+        self.pts = np.genfromtxt(r'./dat_foils/'+self.name+'.dat', 
+                                skip_header=0, dtype=float, 
+                                invalid_raise=False, 
+                                usecols = (0, 1))
+ 
+
+class NACA(Foil):
     
-    def __init__(self, NACAnr, **kwargs):
+  #  __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x')
+    
+    def __init__(self, name, **kwargs):
+        super().__init__(name)
         """
         -----------------------------------------------------------------------
         |  Class for creating a NACA airfoil                                  |
         -----------------------------------------------------------------------
         |  INPUT:                                                             |
-        |      NACAno (str) : 'NACA profile to be used, fx '2410'             |
+        |      name (str) : NACA profile to be used, fx '2410'                |
         |                                                                     |
         |  OPTIONAL:                                                          |
         |      n_pts (int) : Number of points to be plotted, fx 100           |
@@ -36,14 +98,18 @@ class NACA:
         |_____________________________________________________________________|      
         
         """
-        self.NACAnr = NACAnr
-        self.name = 'NACA'+ self.NACAnr
+        self.NACAnr = self.name
+       # self.name = 'NACA'+ self.NACAnr
         self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
  
         self.T = float(self.NACAnr[-2:])/100                                   # Max thickness
- 
+        
+        if self.T > 0.4:
+            raise Exception("Sorry, thickness distributions above 40% is pretty unrealistic.\n Why no just fly with a brick then?")
+       
+        
         self.x = np.linspace(0, 1, self.n_pts)
         
         if self.NACAnr.isnumeric():
@@ -60,13 +126,16 @@ class NACA:
             self.calculate_thickness_distribution()
             
         else:
-            raise Exception("Sorry, a NACA number only contains digits")
+            raise Exception("Sorry, this method only accept NACA numbers that contain digits")
        
             
-    def __str__(self):
-        return f'A {self.name} airfoil from {self.n_pts} points'
-
     def __repr__(self):
+        self.string = f'A generated {self.name} airfoil from {self.n_pts} points'    
+        if self.includeTE:
+            self.string += ' including a trailing edge placed at {self.TE} of chord length'         
+        return self.string
+
+    def __str__(self):
         return f'NACA(\'{self.NACAnr}\', n_pts={self.n_pts}, includeTE={self.includeTE}, TE={self.TE})'
         
     
@@ -90,8 +159,6 @@ class NACA:
         M = float(self.NACAnr[0])/100                                          # Maximum camber percentage
         P = float(self.NACAnr[1])/10                                           # Toppoint as fraction of chord
  
-        
-  
         x1, x2 = np.split(self.x, [int(P*len(self.x))])
     
         yc1 = (M/P**2)*((2*P*x1)-x1**2)      # Camber line
@@ -143,10 +210,27 @@ class NACA:
         self.dyc_dx = ((k1/6)*(3*self.x**2-6*m*self.x+m**2*(3-m)))*(self.x<P)+(-1*((k1*m**3)/6))*(self.x >= P)
 
 
-    def six_series(self):
-        a = 0.3
+    def six_series(self, a=1):
+        """
+        -----------------------------------------------------------------------
+        WIP
+        a (float) : A number between 0 and 1 -> 
+                "NACA 6-series airfoils produce a uniform chordwise loading
+                from the leading edge to the point x/c=a and a linearly decreasing 
+                load from this point to the trailing edge."
+                
+                Defaults to 1 : "When the mean-line designation is not given, it is understood that the uniform-load
+                                 mean line (a=1.0) has been used. "
+                
+                (source: https://ntrs.nasa.gov/api/citations/19930090976/downloads/19930090976.pdf)
+                
+        cli (float) : Design lift coefficient        
+                
+        -----------------------------------------------------------------------
+        """
+ 
         b = 1.0           
-        cl = 1;
+        cli = 1;
         
         g = -1/(b-a) * ( a**2 * (0.5* np.log(a) -0.25) - b**2 * (0.5 * np.log(b) - 0.25) )   
          
@@ -159,9 +243,9 @@ class NACA:
             h-= 0.25*(1-a)**2
         h += g
         
-        y  = cl/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-x)**2* np.log(abs(a-x)) - 0.5*(b-x)**2*np.log(abs(b-x)) + 0.25*(b-x)**2 - 0.25*(a-x)**2) - x*np.log(x) + g - h*x) 
+        self.yc = cli/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-self.x)**2* np.log(abs(a-self.x)) - 0.5*(b-self.x)**2*np.log(abs(b-self.x)) + 0.25*(b-self.x)**2 - 0.25*(a-self.x)**2) - self.x*np.log(self.x) + g - h*self.x) 
     
-        pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
+      #  pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
 
 
     def calculate_thickness_distribution(self):
@@ -203,38 +287,7 @@ class NACA:
  
         self.pts = np.concatenate((Pts_x.T[:, None], Pts_y.T[:, None]), axis=1)
         
-
-    
-    def plot(self):
-        """
-        -----------------------------------------------------------------------
-        | Method for plotting the foil created by this class                  |
-        -----------------------------------------------------------------------
-        """
-        fig = plt.figure(figsize=(7, 5))
-        ax = fig.add_subplot(111)
-        ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
-      #  ax.plot(xu, yu, color='blue', linestyle='solid', linewidth=1)
-       # ax.plot(xl, yl, color='blue', linestyle='solid', linewidth=1)
-        ax.plot(self.pts[:,0], self.pts[:,1], color='blue', linestyle='solid', linewidth=1)
-        ax.axis('equal')        
-        
-        
-    def save(self, output_folder = r'./export_folder/'):
-        """
-        -----------------------------------------------------------------------
-        | Method for saving the foil created by this class                    |
-        -----------------------------------------------------------------------
-        |  output_folder (str) : Full path to the output folder of the foil   |
-        |                        file. Default to './export_folder/'          |
-        |_____________________________________________________________________|
-        """
-        
-        output_path = os.path.join(output_folder, self.NACAnr+'.txt')
-        np.savetxt( output_path, self.pts, delimiter=' ', fmt='%1.3f')
-
-
-
+ 
 
 
 
@@ -311,7 +364,7 @@ class NACAs:
 
 
 class PlotFoil: 
-    def all_from_list(foils):
+    def from_list(foils):
         fig = plt.figure(figsize=(7, 5))
         ax = fig.add_subplot(111)
 
@@ -329,6 +382,41 @@ class PlotFoil:
      
 
 
+
+
+
+# =============================================================================
+# 
+# =============================================================================
+
+airfoiL = FromDatabase("risoe_a_21")
+airfoiL.plot()
+
+
+
+
+airfoiL2 = NACA("2412")
+airfoiL2.plot()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # NACA 6-series:
 # "When the mean-line designation is not given, it is understood that 
 # the uniform-load mean line (a= 1.0) has been used." 
@@ -337,37 +425,46 @@ class PlotFoil:
 #65,3-218, a=O.5, 
 
 
-x = np.linspace(0, 1, 100)
+# =============================================================================
+# x = np.linspace(0, 1, 100)
+# 
+#  
+# a = 0.3
+# b = 1.0  # caution for NON-unity entries change the equation for h
+#  
+# cl = 1;
+# 
+# g = -1/(b-a) * ( a**2 * (0.5* np.log(a) -0.25) - b**2 * (0.5 * np.log(b) - 0.25) )   
+# 
+# 
+# h = 0
+# if 0 <= a < 1:
+#     h+= 1/(b-a) * (0.5*(1-a)**2 * np.log(1-a))                 
+# if 0 <= b < 1:         
+#     h-= (0.5*(1-b)**2)*np.log(1-b) + 0.25*(1-b)**2 
+# if 0 <= a < 1:    
+#     h-= 0.25*(1-a)**2
+# h += g
+# 
+# y  = cl/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-x)**2* np.log(abs(a-x)) - 0.5*(b-x)**2*np.log(abs(b-x)) + 0.25*(b-x)**2 - 0.25*(a-x)**2) - x*np.log(x) + g - h*x) 
+# 
+# y = np.concatenate([y, -1*np.flip(y)])
+# x = np.concatenate([x, np.flip(x)])
+# 
+# pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
+# 
+# fig = plt.figure(figsize=(7, 5))
+# ax = fig.add_subplot(111)
+# ax.plot(pts[:,0], pts[:,1], color='blue', linestyle='solid', linewidth=1)
+# ax.axis('equal')        
+# plt.show()
+# 
+# 
+# =============================================================================
+
 
  
-a = 0.3
-b = 1.0  # caution for NON-unity entries change the equation for h
- 
-cl = 1;
 
-g = -1/(b-a) * ( a**2 * (0.5* np.log(a) -0.25) - b**2 * (0.5 * np.log(b) - 0.25) )   
-
-
-h = 0
-if 0 <= a < 1:
-    h+= 1/(b-a) * (0.5*(1-a)**2 * np.log(1-a))                 
-if 0 <= b < 1:         
-    h-= (0.5*(1-b)**2)*np.log(1-b) + 0.25*(1-b)**2 
-if 0 <= a < 1:    
-    h-= 0.25*(1-a)**2
-h += g
-
-y  = cl/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-x)**2* np.log(abs(a-x)) - 0.5*(b-x)**2*np.log(abs(b-x)) + 0.25*(b-x)**2 - 0.25*(a-x)**2) - x*np.log(x) + g - h*x) 
-
-y = np.concatenate([y, -1*np.flip(y)])
-x = np.concatenate([x, np.flip(x)])
-
-pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
-fig = plt.figure(figsize=(7, 5))
-ax = fig.add_subplot(111)
-ax.plot(pts[:,0], pts[:,1], color='blue', linestyle='solid', linewidth=1)
-ax.axis('equal')        
-plt.show()
 # =============================================================================
 # 
 # =============================================================================
