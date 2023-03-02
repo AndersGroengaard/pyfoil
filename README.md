@@ -15,13 +15,14 @@
 <br/>
 
 
-<center>
+<div align="center">
 
 [![Generic badge](https://img.shields.io/badge/Python-3.9-blue)]()
 [![Generic badge](https://img.shields.io/badge/version-0.1.0_a-green)]()
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Size](https://img.shields.io/github/repo-size/AndersGroengaard/pyfoil)
-</center>
+ 
+</div>
 
 <br /><br />
 _Repository containing python scripts for generating or fetching various airfoils_
