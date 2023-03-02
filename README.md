@@ -85,9 +85,11 @@ I would like to turn this into a full Python package at some point
 
 
 
-Currently, the main window looks like this:
+Locally, I had made a prototype for generating multi-element airfoils, which in its GUI form looked like this:
 
 <img src="./doc/gui.png" width="700">
+
+Which gives a rough direction of what I would like to achieve
 
 
 <br/><br/>
