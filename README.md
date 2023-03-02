@@ -1,8 +1,10 @@
 
 
 <div align="center">
- 
+ <img src="./doc/pyfoil.png" width="200">
+
  <h1 align="center">  PyFoil </h1>
+ 
   <a href="https://github.com/AndersGroengaard/pyfoil/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+">Report a Bug</a>
   ·
   <a href="https://github.com/AndersGroengaard/pyfoil/issues/new?assignees=&labels=enhancement&template=02_FEATURE_REQUEST.md&title=feat%3A+">Request a Feature</a>
