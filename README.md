@@ -31,10 +31,11 @@ _Repository containing python scripts for generating or fetching various airfoil
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about"> ➤ About The Project</a></li>
+    <li><a href="#about"> ➤ About </a></li>
     <li><a href="#features"> ➤ Features</a></li>
     <li><a href="#planned-features"> ➤ Planned Features</a></li>
-     <li><a href="#limitations"> ➤ Limitations</a></li>
+    <li><a href="#limitations"> ➤ Limitations</a></li>
+    <li><a href="#license"> ➤ License</a></li>
   </ol>
 </details>
  
@@ -127,7 +128,7 @@ Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroeng
 
  
 
-## License
+<h2 id="license"> :book: License</h2>
 
 This project is licensed under a GNU GENERAL PUBLIC LICENSE - see the LICENSE.md file for details
 
