@@ -49,7 +49,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 <p align="justify"> 
    The intended purpose of this package is to serve as a tool to find the best airfoil shape for your engineering application.
  
-   I hope you make some power outputting wind (or water!) turbines, and energy-efficient vehicles :airplane: so we can save the planet :earth_africa: 
+   I hope you make some efficient wind (or water!) turbines for some renewable energy, and/or energy-efficient vehicles :airplane: so we can save the planet :earth_africa: 
 </p>
 
 
@@ -61,7 +61,12 @@ _Repository containing python scripts for generating or fetching various airfoil
 
 <!-- Features -->
 <h2 id="features"> :dart: FEATURES </h2>
-* Generate one, more or all NACA Airfoils.
+
+* <b> Generate one, more or all NACA Airfoils: </b>
+
+ Foils are generated in according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a, in which they stated:
+
+> "The coordinates order starts from upper surface trailing edge, then wraps around the leading edge to the lower surface trailing edge"
 
 <!-- Features -->
 <h2 id="planned-features"> :goal_net: PLANNED FEATURES </h2>
@@ -80,16 +85,22 @@ I would like to turn this into a full Python package at some point
 
 
 
-Currently, the main window looks like this:
+Locally, I had made a prototype for generating multi-element airfoils, which in its GUI form looked like this:
 
 <img src="./doc/gui.png" width="700">
+
+Which gives a rough direction of what I would like to achieve
 
 
 <br/><br/>
 
 ## :man_technologist: How to use :woman_technologist: 
 
-To create 4 and 5 digit NACA airfoil pts, and also plot and save them, you could write (See also the example.py file):
+
+
+
+
+To create 4 and 5 digit NACA airfoil points by code, and also plot and save them, you could write (See also the example.py file):
 
 ```python
 
@@ -106,8 +117,10 @@ airfoil.plot()
 
 # Save the points to a .txt file 
 airfoil.save()  
+```
+Likewise for a 5-digit NACA airfoil:
 
-
+```python
 # NACA 5-Digit airfoil:
 airfoil = NACA("23116")
 airfoil.plot()
