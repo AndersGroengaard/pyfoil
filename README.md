@@ -100,7 +100,7 @@ Which gives a rough direction of what I would like to achieve
 
 
 
-To create 4 and 5 digit NACA airfoil pts, and also plot and save them, you could write (See also the example.py file):
+To create 4 and 5 digit NACA airfoil points by code, and also plot and save them, you could write (See also the example.py file):
 
 ```python
 
