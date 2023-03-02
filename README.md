@@ -61,7 +61,12 @@ _Repository containing python scripts for generating or fetching various airfoil
 
 <!-- Features -->
 <h2 id="features"> :dart: FEATURES </h2>
-* Generate one, more or all NACA Airfoils.
+
+* <b> Generate one, more or all NACA Airfoils: </b>
+
+ Foils are generated in according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a, in which they stated:
+
+> "The coordinates order starts from upper surface trailing edge, then wraps around the leading edge to the lower surface trailing edge"
 
 <!-- Features -->
 <h2 id="planned-features"> :goal_net: PLANNED FEATURES </h2>
@@ -88,6 +93,10 @@ Currently, the main window looks like this:
 <br/><br/>
 
 ## :man_technologist: How to use :woman_technologist: 
+
+
+
+
 
 To create 4 and 5 digit NACA airfoil pts, and also plot and save them, you could write (See also the example.py file):
 
