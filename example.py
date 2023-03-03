@@ -32,7 +32,7 @@ airfoil2.save()
     
 from foils import NACAs, PlotFoil
 
-my_foils = ['0012-22', '0012-76']
+my_foils = ['2312-24', '8420', '23114']
 
 foils = NACAs.generate_NACA_foils(my_foils)
 PlotFoil.from_list(foils)

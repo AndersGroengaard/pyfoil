@@ -23,10 +23,13 @@ import matplotlib
 # =============================================================================
 
 
+
+
+
 class Foil:
     """
     ---------------------------------------------------------------------------
-    | Parent class for all types of foils
+    | Parent class for all types of foils                                     |
     ---------------------------------------------------------------------------
     """
     
@@ -35,7 +38,7 @@ class Foil:
 
     def set_chord(self, c):
         """
-        Method for scaling the foil på chord length
+        Method for scaling the foil chord length
         """
         self.PTS = self.pts*c
 
@@ -45,13 +48,31 @@ class Foil:
         | Method for plotting the foil created by this class                  |
         -----------------------------------------------------------------------
         """
-        fig = plt.figure(figsize=(7, 5))
+        from matplotlib import font_manager as fm, rcParams
+        fpath = './fonts/nasalization-rg.otf'
+ 
+        prop = fm.FontProperties(fname=fpath, size=16)
+ 
+        fig = plt.figure(figsize=(7, 5), facecolor='#212946')
         ax = fig.add_subplot(111)
-       # ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
-        ax.plot(self.pts[:,0], self.pts[:,1], color='blue', linestyle='solid', linewidth=1)
+        #ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
+        ax.set_facecolor('#212946')
+        ax.plot(self.pts[:,0], self.pts[:,1], 
+                color='#08F7FE', linestyle='solid', linewidth=1)
         ax.axis('equal')        
-        ax.set_title(self.name)
-        
+        ax.set_title(self.name, fontproperties=prop, color='#08F7FE')
+ 
+        plt.grid(color='#2A3459', linestyle='solid')
+ 
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+ 
+        ax.tick_params(colors='#DFE0E1', direction='out')
+        for tick in ax.get_xticklabels():
+            tick.set_color('#DFE0E1')
+        for tick in ax.get_yticklabels():
+            tick.set_color('#DFE0E1')
+ 
         
     def save(self, output_folder = r'./export_folder/'):
         """
@@ -71,7 +92,7 @@ class Foil:
 
 
  
-class FromDatabase(Foil):
+class DataFoil(Foil):
     def __init__(self, name):
         super().__init__(name)
         """
@@ -114,12 +135,17 @@ class NACA(Foil):
         
         """
         self.NACAnr = self.name
-       # self.name = 'NACA'+ self.NACAnr
+       
         self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
-       
-        self.x = np.linspace(0, 1, self.n_pts)
+        self.cos_space = kwargs.get("cos_space", False)       
+        
+        if self.cos_space:
+           beta = np.linspace(0, np.pi, self.n_pts)
+           self.x = 0.5*(1-np.cos(beta))
+        else:
+            self.x = np.linspace(0, 1, self.n_pts)
     
         if len(self.NACAnr) == 4:
             self.four_digit()
@@ -137,13 +163,13 @@ class NACA(Foil):
             
         self.calculate_ordinates()
             
-    def __repr__(self):
-        self.string = f'A generated {self.name} airfoil from {self.n_pts} points'    
+    def __str__(self):
+        self.string = f'A generated NACA{self.name} airfoil from {self.n_pts} points'    
         if self.includeTE:
             self.string += ' including a trailing edge placed at {self.TE} of chord length'         
         return self.string
 
-    def __str__(self):
+    def __repr__(self):
         return f'NACA(\'{self.NACAnr}\', n_pts={self.n_pts}, includeTE={self.includeTE}, TE={self.TE})'
         
     
@@ -444,24 +470,22 @@ class PlotFoil:
 # 
 # =============================================================================
 
-# =============================================================================
-# airfoiL = FromDatabase("risoe_a_21")
-# airfoiL.set_chord(5.12)
-# airfoiL.plot()
-# print(airfoiL)
-# 
-# 
-# 
-# airfoiL2 = NACA("2412")
-# airfoiL2.set_chord(3.14)
-# airfoiL2.plot()
-# print(airfoiL2)
-# 
-# 
-# 
-# 
-# 
-# =============================================================================
+airfoiL = DataFoil("risoe_a_21")
+airfoiL.set_chord(5.12)
+airfoiL.plot()
+print(airfoiL)
+
+
+
+airfoiL2 = NACA("2412")
+airfoiL2.set_chord(3.14)
+airfoiL2.plot()
+print(airfoiL2)
+
+
+
+
+
 
 
 
