@@ -64,7 +64,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 
 * <b> Generate one, more or all NACA Airfoils: </b>
 
- Foils are generated in according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a, in which they stated:
+ Foils are generated according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a>, in which is stated:
 
 > "The coordinates order starts from upper surface trailing edge, then wraps around the leading edge to the lower surface trailing edge"
 
