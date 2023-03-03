@@ -4,7 +4,7 @@
 #  Single airfoils
 # =============================================================================
 
-from naca import NACA
+from foils import NACA
 
 # NACA 4-Digit airfoil:
 airfoil = NACA("2310")
@@ -12,14 +12,14 @@ airfoil = NACA("2310")
 # If you want to retrieve the pts:
 airfoil_pts = airfoil.pts   
 
-airfoil.plot()
+#airfoil.plot()
 airfoil.save()
 
 
 # NACA 5-Digit airfoil:
-airfoil = NACA("23116")
-airfoil.plot()
-airfoil.save()
+airfoil2 = NACA("23116")
+#airfoil2.plot()
+airfoil2.save()
 
 
 
@@ -30,12 +30,12 @@ airfoil.save()
 # Generate mupltiple airfoils by name:
     
     
-from naca import NACAs, PlotFoil
+from foils import NACAs, PlotFoil
 
-my_foils = ['2312', '23123', '5212']
+my_foils = ['0012-22', '0012-76']
 
 foils = NACAs.generate_NACA_foils(my_foils)
-PlotFoil.all_from_list(foils)
+PlotFoil.from_list(foils)
 
 
 # =============================================================================

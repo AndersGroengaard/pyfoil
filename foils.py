@@ -4,6 +4,14 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 import matplotlib
+
+# =============================================================================
+#  Muligt ting at undersøge:
+#    - von Karman ogive, von karman waverider
+#    - nose cone design
+#    - LH Haack
+# =============================================================================
+
 # =============================================================================
 # class DimensionAirfoil():
 #         """
@@ -17,13 +25,19 @@ import matplotlib
 
 class Foil:
     """
-    -----------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     | Parent class for all types of foils
-    -----------------------------------------------------------------------
+    ---------------------------------------------------------------------------
     """
     
     def __init__(self, name):
         self.name = name
+
+    def set_chord(self, c):
+        """
+        Method for scaling the foil på chord length
+        """
+        self.PTS = self.pts*c
 
     def plot(self):
         """
@@ -52,7 +66,8 @@ class Foil:
         output_path = os.path.join(output_folder, self.name+'.dat')
         np.savetxt(output_path, self.pts, delimiter=' ', fmt='%1.5f')
 
-
+    def __str__(self) -> str:
+        return f'{self.name}'
 
 
  
@@ -103,31 +118,24 @@ class NACA(Foil):
         self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
- 
-        self.T = float(self.NACAnr[-2:])/100                                   # Max thickness
-        
-        if self.T > 0.4:
-            raise Exception("Sorry, thickness distributions above 40% is pretty unrealistic.\n Why no just fly with a brick then?")
        
-        
         self.x = np.linspace(0, 1, self.n_pts)
-        
-        if self.NACAnr.isnumeric():
-            
-            if len(self.NACAnr) == 4:
-                self.four_digit()
-                
-            elif len(self.NACAnr) == 5:
-                self.five_digit()
-                
-            else:
-                raise Exception("Sorry, input NACA number must be a 4 or 5 digit ")
-                
+    
+        if len(self.NACAnr) == 4:
+            self.four_digit()
             self.calculate_thickness_distribution()
             
+        elif len(self.NACAnr) == 5:
+            self.five_digit()
+            self.calculate_thickness_distribution()
+            
+        elif len(self.NACAnr) == 7 and self.NACAnr[4] == '-':
+            self.four_digit()
+            self.calculate_thickness_distribution(t_type='modified')
         else:
-            raise Exception("Sorry, this method only accept NACA numbers that contain digits")
-       
+            raise Exception("Sorry, input NACA number must be a 4 or 5 digit ")
+            
+        self.calculate_ordinates()
             
     def __repr__(self):
         self.string = f'A generated {self.name} airfoil from {self.n_pts} points'    
@@ -158,18 +166,26 @@ class NACA(Foil):
         # Extract values values from the NACA string
         M = float(self.NACAnr[0])/100                                          # Maximum camber percentage
         P = float(self.NACAnr[1])/10                                           # Toppoint as fraction of chord
+        self.TT = float(self.NACAnr[2:4])/100                                  # Max thickness
+        
  
         x1, x2 = np.split(self.x, [int(P*len(self.x))])
     
-        yc1 = (M/P**2)*((2*P*x1)-x1**2)      # Camber line
-        yc2 = (M/((1-P)**2))*(1-(2*P) + (2*P*x2)-(x2**2))
-        dyc_dx1 = ((2*M)/(P**2))*(P-x1)      # Derivative of the camber line
-        dyc_dx2 = ((2*M)/((1-P)**2))*(P-x2)
-    
-        self.yc = np.concatenate((yc1, yc2))
-        self.dyc_dx = np.concatenate((dyc_dx1, dyc_dx2))
-             
+        if M == 0:
+            self.yc = np.zeros(len(self.x))
+            self.dyc_dx = np.zeros(len(self.x))
+        else:
+            yc1 = (M/P**2)*((2*P*x1)-x1**2)                                    # Camber line
+            yc2 = (M/((1-P)**2))*(1-(2*P) + (2*P*x2)-(x2**2))
+            dyc_dx1 = ((2*M)/(P**2))*(P-x1)                                    # Derivative of the camber line
+            dyc_dx2 = ((2*M)/((1-P)**2))*(P-x2)
         
+            self.yc = np.concatenate((yc1, yc2))
+            self.dyc_dx = np.concatenate((dyc_dx1, dyc_dx2))
+             
+
+        
+    
     def five_digit(self):
         """
         -----------------------------------------------------------------------
@@ -186,7 +202,8 @@ class NACA(Foil):
             raise ValueError('Third digit in a 5-digit NACA Airfoil should be 1 or 0')
             
         P = 5 * float(self.NACAnr[1]) / 100  # Top point as fraction of chord
-
+        self.TT = float(self.NACAnr[2:4])/100                                        # Max thickness
+        
         if int(self.NACAnr[2])==0:
             p = np.array([0.05, 0.1, 0.15, 0.2, 0.25])
             M = np.array([0.0580, 0.1260, 0.2025, 0.2900, 0.3910])
@@ -248,7 +265,52 @@ class NACA(Foil):
       #  pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
 
 
-    def calculate_thickness_distribution(self):
+    def calculate_thickness_distribution(self, t_type="normal"):
+        """
+        -----------------------------------------------------------------------
+        | Method for calculating the thickness distribution of a NACA Airfoil |
+        |                                                                     |
+        -----------------------------------------------------------------------
+        """
+    
+        if t_type == "modified": #
+          
+            # Source: Geometry for Aerodynamicists
+           
+            I = float(self.NACAnr[5])                                          # Designation of the leading edge radius
+            T = float(self.NACAnr[6])/10                                       # chordwise position of maximum thickness in tenths of chord
+            
+            d1 = (2.24 - 5.42*T + 12.3*T**2) / (10*(1-0.878*T))                # (A-21) Riegels approximation
+            d2 = (0.294 - 2*(1-T)*d1) / ((1-T)**2)                             # (A-22)
+            d3 = (-0.196 + (1-T)*d1)/((1-T)**3)                                # (A-23)
+            
+            if I <= 8:
+                Xi_LE = I/6
+            else:
+                Xi_LE = 10.3933                                                # (A-25)
+                
+            a0 = 0.296904*Xi_LE                                                # (A-24)
+            
+            rho1 = (1/5)*(((1-T)**2)/(0.588-2*d1*(1-T)))                       # (A-26)
+            
+            a1 = (0.3/T) - (15/8)*(a0/np.sqrt(T)) - (T/(10*rho1))              # (A-27)
+            a2 = -1*(0.3/(T**2)) + (5/4)*(a0/(T**(3/2))) + 1/(5*rho1)          # (A-28)
+            a3 = 0.1/(T**3) - ((0.375*a0)/(T**(5/2))) - ( 1/(10*rho1*T))       # (A-29)
+            
+            x1, x2 = np.split(self.x, [int(T*len(self.x))])
+            yt1 = 5*self.TT*(a0*np.sqrt(x1) + a1*x1 + a2*(x1**2) + a3*(x1**3)) # (A-19)
+            yt2 = 5*self.TT*(0.002 + d1*(1-x2) + d2*((1-x2)**2) + d3*((1-x2)**3))        # (A-20)
+            self.yt =  np.concatenate((yt1, yt2))
+            
+        else:
+            a = np.array([0.2969, -0.1260, -0.3516, 0.2843, -0.1036])
+       
+            self.yt = 5*self.TT*(a[0]*np.sqrt(self.x) + a[1]*self.x + a[2]*(self.x**2) + a[3]*(self.x**3) + a[4]*(self.x**4))
+     
+
+ 
+        
+    def calculate_ordinates(self):
         """
         -----------------------------------------------------------------------
         | Method for calculating the surface points of a NACA Airfoil         |
@@ -257,10 +319,6 @@ class NACA(Foil):
         """
         theta = np.arctan(self.dyc_dx)
         
-        a = np.array([0.2969, -0.1260, -0.3516, 0.2843, -0.1036])
-   
-        self.yt = 5*self.T*(a[0]*np.sqrt(self.x) + a[1]*self.x + a[2]*(self.x**2) + a[3]*(self.x**3) + a[4]*(self.x**4))
- 
         if self.includeTE:
             te_pts = int(np.size(self.yt) * self.TE)
             self.yt =  np.delete(self.yt, np.arange(te_pts, self.n_pts))
@@ -287,10 +345,7 @@ class NACA(Foil):
  
         self.pts = np.concatenate((Pts_x.T[:, None], Pts_y.T[:, None]), axis=1)
         
- 
-
-
-
+        
 
 class NACAs:
     
@@ -389,39 +444,38 @@ class PlotFoil:
 # 
 # =============================================================================
 
-airfoiL = FromDatabase("risoe_a_21")
-airfoiL.plot()
-
-
-
-
-airfoiL2 = NACA("2412")
-airfoiL2.plot()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# =============================================================================
+# airfoiL = FromDatabase("risoe_a_21")
+# airfoiL.set_chord(5.12)
+# airfoiL.plot()
+# print(airfoiL)
+# 
+# 
+# 
+# airfoiL2 = NACA("2412")
+# airfoiL2.set_chord(3.14)
+# airfoiL2.plot()
+# print(airfoiL2)
+# 
+# 
+# 
+# 
+# 
+# =============================================================================
 
 
 
 
 
-# NACA 6-series:
-# "When the mean-line designation is not given, it is understood that 
-# the uniform-load mean line (a= 1.0) has been used." 
 
 
+
+
+
+
+
+
+ 
 #65,3-218, a=O.5, 
 
 
