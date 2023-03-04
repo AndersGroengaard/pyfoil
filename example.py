@@ -13,13 +13,13 @@ airfoil = NACA("2310")
 airfoil_pts = airfoil.pts   
 
 #airfoil.plot()
-airfoil.save()
+#airfoil.save()
 
 
 # NACA 5-Digit airfoil:
 airfoil2 = NACA("23116")
 #airfoil2.plot()
-airfoil2.save()
+#airfoil2.save()
 
 
 
@@ -32,8 +32,9 @@ airfoil2.save()
     
 from foils import NACAs, PlotFoil
 
-my_foils = ['2312-24', '8420', '23114']
-
+#my_foils = ['4504','4508', '4512', '4516', '4520']
+my_foils = ['2512','3512', '4512', '5512', '6512']
+my_foils = ['1512','3512', '5512', '7512', '9512']
 foils = NACAs.generate_NACA_foils(my_foils)
 PlotFoil.from_list(foils)
 

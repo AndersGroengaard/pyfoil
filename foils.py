@@ -51,7 +51,8 @@ class Foil:
         from matplotlib import font_manager as fm, rcParams
         fpath = './fonts/nasalization-rg.otf'
  
-        prop = fm.FontProperties(fname=fpath, size=16)
+        prop = fm.FontProperties(#fname=fpath, 
+                                 size=16)
  
         fig = plt.figure(figsize=(7, 5), facecolor='#212946')
         ax = fig.add_subplot(111)
@@ -135,7 +136,7 @@ class NACA(Foil):
         
         """
         self.NACAnr = self.name
-       
+        self.name = "NACA"+self.NACAnr
         self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
@@ -164,7 +165,7 @@ class NACA(Foil):
         self.calculate_ordinates()
             
     def __str__(self):
-        self.string = f'A generated NACA{self.name} airfoil from {self.n_pts} points'    
+        self.string = f'A generated {self.name} airfoil from {self.n_pts} points'    
         if self.includeTE:
             self.string += ' including a trailing edge placed at {self.TE} of chord length'         
         return self.string
@@ -301,7 +302,7 @@ class NACA(Foil):
     
         if t_type == "modified": #
           
-            # Source: Geometry for Aerodynamicists
+            # Equtions Source: Geometry for Aerodynamicists
            
             I = float(self.NACAnr[5])                                          # Designation of the leading edge radius
             T = float(self.NACAnr[6])/10                                       # chordwise position of maximum thickness in tenths of chord
@@ -446,26 +447,40 @@ class NACAs:
 
 class PlotFoil: 
     def from_list(foils):
-        fig = plt.figure(figsize=(7, 5))
+        fig = plt.figure(figsize=(7, 5), facecolor='#212946')
         ax = fig.add_subplot(111)
-
+        ax.set_facecolor('#212946')
         n = len(foils)
-        color = matplotlib.cm.rainbow(np.linspace(0, 1, n))
+        color = matplotlib.cm.cool(np.linspace(0, 1, n))
 
         i = 0
         for _, c in zip(range(n), color):
-           #plt.plot(x, y, c=c)
-           ax.plot(foils[i].pts[:,0], foils[i].pts[:,1], color=c, linestyle='solid', linewidth=1)
-           i +=1
+            x = foils[i].pts[:,0]
+            y = foils[i].pts[:,1]          
+            ax.plot(x, y, color=c, linestyle='solid', linewidth=1, zorder=6, label=foils[i].name)
+            for cont in range(6, 1, -1):
+                ax.plot(x, y, lw=cont, color=c, zorder=5,
+                    alpha=0.05)
+            i +=1
             
         ax.axis('equal')        
           
-     
+        plt.grid(color='#2A3459', linestyle='solid')
+ 
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+ 
+        ax.tick_params(colors='#DFE0E1', direction='out')
+        for tick in ax.get_xticklabels():
+            tick.set_color('#DFE0E1')
+        for tick in ax.get_yticklabels():
+            tick.set_color('#DFE0E1')
 
 
-
-
-
+        ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE') #xlabel
+        ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')#ylabel
+        ax.set_title("Airfoil Comparison", color='#08F7FE')
+        legend = ax.legend(loc="upper right", frameon=False, labelcolor='linecolor')
 # =============================================================================
 # 
 # =============================================================================
