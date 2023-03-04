@@ -131,11 +131,11 @@ airfoil.save()
 If you want to generate and plot multiple airfoils from a list you could go:
 
 ```python
-from foils import NACAs, PlotFoil
+from foils import NACAs 
  
 my_foils = ['1512','3512', '5512', '7512', '9512']
-foils = NACAs.generate_NACA_foils(my_foils)
-PlotFoil.from_list(foils)
+foils = NACAs(my_foils)
+foils.plot()
 
 ```
 <img src="./doc/multiple_foils.png" width="700">
