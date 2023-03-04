@@ -22,7 +22,13 @@ import matplotlib
 #         """
 # =============================================================================
 
-
+def plot_glowing_line(ax, x, y, color, linestyle='solid', linewidth=1, label=""):
+    ax.plot(x, y, color=color, linestyle=linestyle, 
+            linewidth=linewidth, zorder=2, label=label)
+    for w in range(10):
+        ax.plot(x, y, lw=w, color=color, 
+                zorder=1, alpha=0.05)
+  
 
 
 
@@ -37,7 +43,9 @@ class Foil:
     
     def __init__(self, name):
         self.name = name
-
+        self.x = None
+        self.yt = None
+        
     def set_chord(self, c):
         """
         Method for scaling the foil chord length
@@ -50,31 +58,24 @@ class Foil:
         | Method for plotting the foil created by this class                  |
         -----------------------------------------------------------------------
         """
-       # from matplotlib import font_manager as fm, rcParams
-     #   fpath = './fonts/nasalization-rg.otf'
- 
-   #     prop = fm.FontProperties(#fname=fpath, 
-    #                             size=16)
  
         foil_color = '#08F7FE'
  
         fig = plt.figure(figsize=(7, 5), facecolor='#212946')
         ax = fig.add_subplot(111)
-        #ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
         ax.set_facecolor('#212946')
-        ax.plot(self.pts[:,0], self.pts[:,1], 
-                color=foil_color, linestyle='solid', linewidth=1, zorder=2)
- 
-        for w in range(10):
-            ax.plot(self.pts[:,0],self.pts[:,1], lw=w, color=foil_color, 
-                    zorder=1, alpha=0.05)
         
+        if self.x is not None and self.yt is not None:
+            plot_glowing_line(ax, self.x, self.yt, 
+                              'green', linestyle='dashed', label="camber line")
+
+        ax.fill(self.pts[:,0], self.pts[:,1], color=foil_color, alpha=0.25, zorder=1)      
+        plot_glowing_line(ax, self.pts[:,0], self.pts[:,1], foil_color, label="Foil Surface")
+   
         ax.axis('equal')        
         ax.set_title(self.name, color='#08F7FE')
  
         plt.grid(color='#2A3459', linestyle='solid')
- 
-    
  
         for spine in ax.spines.values():
             spine.set_visible(False)
@@ -85,14 +86,13 @@ class Foil:
         for tick in ax.get_yticklabels():
             tick.set_color('#DFE0E1')
             
-        ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE') #xlabel
-        ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')#ylabel
+        ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE')                 # x-label
+        ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')                # y-label
+        
         
     def save(self, output_folder = r'./export_folder/'):
         """
-        ----------------------------------------------------------------------
-        ,
-        -
+        -----------------------------------------------------------------------
         | Method for saving the foil created by this class                    |
         -----------------------------------------------------------------------
         |  output_folder (str) : Full path to the output folder of the foil   |
@@ -124,12 +124,26 @@ class DataFoil(Foil):
         |                                                                     |
         |_____________________________________________________________________|
         """
-
-        self.pts = np.genfromtxt(r'./dat_foils/'+self.name+'.dat', 
-                                skip_header=0, dtype=float, 
-                                invalid_raise=False, 
-                                usecols = (0, 1))
+        foil_path = r'./foil_lib/'+self.name+'.dat'
+        
+        if os.path.exists(foil_path):
+            
+            self.pts = np.genfromtxt(r'./foil_lib/'+self.name+'.dat', 
+                                    skip_header=0, dtype=float, 
+                                    invalid_raise=False, 
+                                    usecols = (0, 1))
+            
+            self.n_pts = len(self.pts) 
+        
+        else:
+            raise Exception(f'An airfoil by the name of {self.name} was not found in the database' )
+        
+    def __str__(self) -> str:
+        return f' An {self.name} airfoil imported from a database consisting of {self.n_pts} points'             
  
+    def __repr__(self):
+        return f'NACA(\'{self.NACAnr}\', n_pts={self.n_pts}, includeTE={self.includeTE}, TE={self.TE})'
+        
 
 class NACA(Foil):
     
@@ -427,6 +441,7 @@ class FoilGroup:
         for _, c in zip(range(n), color):
             x = self.foils[i].pts[:,0]
             y = self.foils[i].pts[:,1]          
+ 
             ax.plot(x, y, color=c, linestyle='solid', linewidth=1, zorder=6, label=self.foils[i].name)
             for cont in range(6, 1, -1):
                 ax.plot(x, y, lw=cont, color=c, zorder=5,
@@ -452,8 +467,34 @@ class FoilGroup:
         legend = ax.legend(loc="upper right", frameon=False, labelcolor='linecolor')
 
 
-
- 
+class DataFoils:
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.foil_lib_path = "./foil_lib/"
+        self.libnrs = []
+        
+    def list_all(self):
+        self.libnrs = os.listdir(self.foil_lib_path)
+          
+    def import_library_foils(self, libnrs : list):
+        """
+        -----------------------------------------------------------------------
+        | Method for import all airfoils from the library                     |
+        | foils supplied in the input list of strings                         |
+        -----------------------------------------------------------------------
+        """   
+        for l in libnrs:
+            lib_airfoil = DataFoil(l)
+            self.foils.append(lib_airfoil)       
+        
+    def import_all(self):
+        self.list_all()
+        self.import_library_foils(self.libnrs)
+      
+        
+        
+        
+        
 class NACAs(FoilGroup):
  
     def __init__(self, nrs=[], **kwargs):
@@ -534,12 +575,9 @@ class NACAs(FoilGroup):
 # =============================================================================
 # 
 # =============================================================================
-myfoils = NACAs()
-myfoils.makeall_NACA5()
-f=myfoils.foils
-myfoils.plot()
+ 
 # =============================================================================
-# airfoiL = DataFoil("risoe_a_21")
+# airfoiL = DataFoil("s8052")
 # airfoiL.set_chord(5.12)
 # airfoiL.plot()
 # print(airfoiL)
@@ -551,22 +589,24 @@ myfoils.plot()
 # airfoiL2.plot()
 # print(airfoiL2)
 # 
+# 
+# 
+# 
+# 
 # =============================================================================
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+# =============================================================================
+# 
+# lib = DataFoils()
+# lib.list_library()
+# test = lib.nrs
+# 
+# 
+# 
+# =============================================================================
 
 
  

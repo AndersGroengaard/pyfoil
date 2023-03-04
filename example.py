@@ -32,7 +32,7 @@ airfoil2.plot()
     
 from foils import NACAs 
  
-my_foils = ['1512','3512', '5512', '7512', '9512']
+my_foils = ['1512', '3512', '5512', '7512', '9512']
 foils = NACAs(my_foils)
 foils.plot()
 
