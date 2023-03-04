@@ -11,18 +11,14 @@ import matplotlib
 #    - nose cone design
 #    - LH Haack
 # =============================================================================
+ 
 
-# =============================================================================
-# class DimensionAirfoil():
-#         """
-#         -----------------------------------------------------------------------
-#         |      c (float)     : Chord length                                   |
-#         |      origin (tuple)  : Specifiy airfoil displacement in space,      |
-#         |                        i.e., (0,0,0)                                |
-#         """
-# =============================================================================
+
 
 def plot_glowing_line(ax, x, y, color, linestyle='solid', linewidth=1, label=""):
+    """
+     
+    """
     ax.plot(x, y, color=color, linestyle=linestyle, 
             linewidth=linewidth, zorder=2, label=label)
     for w in range(10):
@@ -48,7 +44,9 @@ class Foil:
         
     def set_chord(self, c):
         """
-        Method for scaling the foil chord length
+        -----------------------------------------------------------------------
+        | Method for scaling the foil chord length                            |
+        -----------------------------------------------------------------------
         """
         self.PTS = self.pts*c
 
@@ -65,8 +63,8 @@ class Foil:
         ax = fig.add_subplot(111)
         ax.set_facecolor('#212946')
         
-        if self.x is not None and self.yt is not None:
-            plot_glowing_line(ax, self.x, self.yt, 
+        if self.x is not None and self.yc is not None:
+            plot_glowing_line(ax, self.x, self.yc, 
                               'green', linestyle='dashed', label="camber line")
 
         ax.fill(self.pts[:,0], self.pts[:,1], color=foil_color, alpha=0.25, zorder=1)      
@@ -86,8 +84,8 @@ class Foil:
         for tick in ax.get_yticklabels():
             tick.set_color('#DFE0E1')
             
-        ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE')                 # x-label
-        ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')                # y-label
+        ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE')                
+        ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')               
         
         
     def save(self, output_folder = r'./export_folder/'):
@@ -116,7 +114,7 @@ class DataFoil(Foil):
         super().__init__(name)
         """
         -----------------------------------------------------------------------
-        |  Class for import airfoil points from a database based on           |
+        |  Class for importing airfoil points from a database based on        |
         |  .dat files                                                         |
         -----------------------------------------------------------------------
         |  INPUT:                                                             |
@@ -213,9 +211,10 @@ class NACA(Foil):
         -----------------------------------------------------------------------
         | Method for creating the four digit NACA Airfoil                     |
         -----------------------------------------------------------------------
-        | The first digit is the maximum camber.                              |
-        | The second digit is the relative position of the maximum camber.    |
-        | The last two digits are the maximum thickness.                      |
+        | A NACA 4-digit airfoil has the format MPTT                          | 
+        | The first digit, M,  is the maximum camber.                         |
+        | The second digit, P, is the relative position of the maximum camber.|
+        | The last two digits, TT, designate the maximum thickness.           |
         | Fx:                                                                 |
         |        NACA 2514 airfoil                                            |
         |        Max camber 2% at 0.5 chord                                   |
@@ -262,8 +261,8 @@ class NACA(Foil):
         if not int(self.NACAnr[2]) in (0,1):
             raise ValueError('Third digit in a 5-digit NACA Airfoil should be 1 or 0')
             
-        P = 5 * float(self.NACAnr[1]) / 100  # Top point as fraction of chord
-        self.TT = float(self.NACAnr[2:4])/100                                        # Max thickness
+        P = 5 * float(self.NACAnr[1]) / 100                                    # Top point as fraction of chord
+        self.TT = float(self.NACAnr[2:4])/100                                  # Max thickness
         
         if int(self.NACAnr[2])==0:
             p = np.array([0.05, 0.1, 0.15, 0.2, 0.25])
@@ -297,8 +296,9 @@ class NACA(Foil):
                 from the leading edge to the point x/c=a and a linearly decreasing 
                 load from this point to the trailing edge."
                 
-                Defaults to 1 : "When the mean-line designation is not given, it is understood that the uniform-load
-                                 mean line (a=1.0) has been used. "
+                Defaults to 1 : "When the mean-line designation is not given,
+                                it is understood that the uniform-load
+                                mean line (a=1.0) has been used. "
                 
                 (source: https://ntrs.nasa.gov/api/citations/19930090976/downloads/19930090976.pdf)
                 
@@ -331,8 +331,20 @@ class NACA(Foil):
         -----------------------------------------------------------------------
         | Method for calculating the thickness distribution of a NACA Airfoil |
         |                                                                     |
-        -----------------------------------------------------------------------
+        |    Explanation for NACA 4-digit modified:                           |
+        |    fx NACA 0012-64                                                  |
+        |    After dash:                                                      | 
+        |      - First digit: Roundedness of the nose.                        |
+        |         A value of 6 is the same as the original                    |
+        |         A value of 0 indicates a sharp leading edge.                |
+        |         A value larger than 6 produces a more rounded nose          |
+        |      - Second digit: Location of max thickness in tenths of chord.  |
+        |         default is 30% back from the leading edge.                  |
+        |         If digit is 4 then it is 40%                                |
+        |                                                                     |
+        -----------------------------------------------------------------------        
         """
+ 
     
         if t_type == "modified": #
           
@@ -375,7 +387,8 @@ class NACA(Foil):
         """
         -----------------------------------------------------------------------
         | Method for calculating the surface points of a NACA Airfoil         |
-        |                                                                     |
+        | after the camber line and thickness distribution has been           |
+        | calculated.                                                         |
         -----------------------------------------------------------------------
         """
         theta = np.arctan(self.dyc_dx)
@@ -652,19 +665,7 @@ class NACAs(FoilGroup):
 
 
  
-
-# =============================================================================
-# 
-# =============================================================================
-# =============================================================================
-# 
-# import time
-# 
-# t0 = time.time()
-# =============================================================================
-
-
-
+ 
 
 
     
@@ -688,36 +689,7 @@ class NACAs(FoilGroup):
  
 
    
-
-
-#plot_airfoil(airfoil_pts1)
-
-# =============================================================================
-# 
-# =============================================================================
-
-
-
-
-
-
-# =============================================================================
-#     def modified(self):
-#         """
-#         -----------------------------------------------------------------------
-#         Explanation:
-#         fx NACA 0012-64
-#         After dash:
-#             - First digit: Roundedness of the nose. 
-#                 A value of 6 is the same as the original
-#                 A value of 0 indicates a sharp leading edge. 
-#                 A value larger than 6 produces a more rounded nose
-#             - Second digit: Location of maximum thickness in tenths of chord.
-#                 default is 30% back from the leading edge. 
-#                 If digit is 4 then it is 40%  
-#         -----------------------------------------------------------------------        
-#         """
-# =============================================================================
+ 
 
 
 

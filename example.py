@@ -7,7 +7,7 @@
 from foils import NACA
 
 # NACA 4-Digit airfoil:
-airfoil = NACA("2310")
+airfoil = NACA("6409")
 
 # If you want to retrieve the pts:
 airfoil_pts = airfoil.pts   
