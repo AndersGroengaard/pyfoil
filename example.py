@@ -12,13 +12,13 @@ airfoil = NACA("2310")
 # If you want to retrieve the pts:
 airfoil_pts = airfoil.pts   
 
-#airfoil.plot()
+airfoil.plot()
 #airfoil.save()
 
 
 # NACA 5-Digit airfoil:
 airfoil2 = NACA("23116")
-#airfoil2.plot()
+airfoil2.plot()
 #airfoil2.save()
 
 
@@ -30,15 +30,21 @@ airfoil2 = NACA("23116")
 # Generate mupltiple airfoils by name:
     
     
-from foils import NACAs, PlotFoil
-
-#my_foils = ['4504','4508', '4512', '4516', '4520']
-my_foils = ['2512','3512', '4512', '5512', '6512']
+from foils import NACAs 
+ 
 my_foils = ['1512','3512', '5512', '7512', '9512']
-foils = NACAs.generate_NACA_foils(my_foils)
-PlotFoil.from_list(foils)
+foils = NACAs(my_foils)
+foils.plot()
 
 
+#foils = NACAs()
+
+
+
+
+#import sys
+#print("Airfoil object size is: " + str(sys.getsizeof(airfoil)) + " bytes")
+#print("Airfoil objects sizes are: " + str(sys.getsizeof(foils)) + " bytes")
 # =============================================================================
 # foils = NACAs.makeall_NACA5()
 # PlotFoil.all_from_list(foils)

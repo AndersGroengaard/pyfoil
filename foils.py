@@ -33,6 +33,8 @@ class Foil:
     ---------------------------------------------------------------------------
     """
     
+    descr = "Foil Object"
+    
     def __init__(self, name):
         self.name = name
 
@@ -48,22 +50,31 @@ class Foil:
         | Method for plotting the foil created by this class                  |
         -----------------------------------------------------------------------
         """
-        from matplotlib import font_manager as fm, rcParams
-        fpath = './fonts/nasalization-rg.otf'
+       # from matplotlib import font_manager as fm, rcParams
+     #   fpath = './fonts/nasalization-rg.otf'
  
-        prop = fm.FontProperties(#fname=fpath, 
-                                 size=16)
+   #     prop = fm.FontProperties(#fname=fpath, 
+    #                             size=16)
+ 
+        foil_color = '#08F7FE'
  
         fig = plt.figure(figsize=(7, 5), facecolor='#212946')
         ax = fig.add_subplot(111)
         #ax.plot(self.x, self.yt, color='green', linestyle='dashed', linewidth=0.5)
         ax.set_facecolor('#212946')
         ax.plot(self.pts[:,0], self.pts[:,1], 
-                color='#08F7FE', linestyle='solid', linewidth=1)
+                color=foil_color, linestyle='solid', linewidth=1, zorder=2)
+ 
+        for w in range(10):
+            ax.plot(self.pts[:,0],self.pts[:,1], lw=w, color=foil_color, 
+                    zorder=1, alpha=0.05)
+        
         ax.axis('equal')        
-        ax.set_title(self.name, fontproperties=prop, color='#08F7FE')
+        ax.set_title(self.name, color='#08F7FE')
  
         plt.grid(color='#2A3459', linestyle='solid')
+ 
+    
  
         for spine in ax.spines.values():
             spine.set_visible(False)
@@ -73,11 +84,15 @@ class Foil:
             tick.set_color('#DFE0E1')
         for tick in ax.get_yticklabels():
             tick.set_color('#DFE0E1')
- 
+            
+        ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE') #xlabel
+        ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')#ylabel
         
     def save(self, output_folder = r'./export_folder/'):
         """
-        -----------------------------------------------------------------------
+        ----------------------------------------------------------------------
+        ,
+        -
         | Method for saving the foil created by this class                    |
         -----------------------------------------------------------------------
         |  output_folder (str) : Full path to the output folder of the foil   |
@@ -94,6 +109,9 @@ class Foil:
 
  
 class DataFoil(Foil):
+    
+    descr = "DataFoil Object"
+    
     def __init__(self, name):
         super().__init__(name)
         """
@@ -115,7 +133,9 @@ class DataFoil(Foil):
 
 class NACA(Foil):
     
-  #  __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x')
+    descr = "NACA Foil Object"
+    
+    __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x')
     
     def __init__(self, name, **kwargs):
         super().__init__(name)
@@ -146,7 +166,7 @@ class NACA(Foil):
            beta = np.linspace(0, np.pi, self.n_pts)
            self.x = 0.5*(1-np.cos(beta))
         else:
-            self.x = np.linspace(0, 1, self.n_pts)
+            self.x = np.linspace(0, 1, self.n_pts)#, dtype=np.float16)
     
         if len(self.NACAnr) == 4:
             self.four_digit()
@@ -329,9 +349,9 @@ class NACA(Foil):
             yt2 = 5*self.TT*(0.002 + d1*(1-x2) + d2*((1-x2)**2) + d3*((1-x2)**3))        # (A-20)
             self.yt =  np.concatenate((yt1, yt2))
             
-        else:
+        else:                                                                  # Else, we calculate the thickness distribution using the NACA 4-Digit method
+            
             a = np.array([0.2969, -0.1260, -0.3516, 0.2843, -0.1036])
-       
             self.yt = 5*self.TT*(a[0]*np.sqrt(self.x) + a[1]*self.x + a[2]*(self.x**2) + a[3]*(self.x**3) + a[4]*(self.x**4))
      
 
@@ -374,90 +394,40 @@ class NACA(Foil):
         
         
 
-class NACAs:
-    
-    def __init__(self, **kwargs):
-        self.nacanrs = []
-        self.nacafoils = []
-      
+
+
+
+
+
+
+
+
+# =============================================================================
+# 
+# =============================================================================
+
+
+
+
+
+class FoilGroup: 
+    def __init__(self):
+        print("FoilGroup initialized")
+        self.foils = []
+ 
         
-    @staticmethod     
-    def makeall_NACA4nrs():
-        """
-        -----------------------------------------------------------------------
-        | Method for making all the realistic NACA 4 numbers                  |
-        -----------------------------------------------------------------------
-        """
-        naca4nrs = []
-        for m in range(10):
-            for p in range(1,10):
-                for t in range(1,40):
-                    if t < 10:
-                        t = "0"+str(t)
-                    else:
-                        t = str(t)
-                    nacanumber = str(m)+str(p)+t
-               #     print(nacanumber)
-                    naca4nrs.append(nacanumber)
-        return naca4nrs
-                    
-    
-    @staticmethod
-    def makeall_NACA5nrs():
-        """
-        -----------------------------------------------------------------------
-        | Method for making all the realistic NACA 5 numbers                  |
-        -----------------------------------------------------------------------
-        """
-        naca5nrs = []
-        for l in range(1,7):
-            for p in range(3,5):
-                for q in range(2):
-                    for t in range(1,40):
-                        if t < 10:
-                            t = "0"+str(t)
-                        else:
-                            t = str(t)
-                        nacanumber = str(l)+str(p)+str(q)+t
-                      #  print(nacanumber)
-                        naca5nrs.append(nacanumber)
-        return naca5nrs
-    
-    
-    @staticmethod    
-    def generate_NACA_foils(nacanrs : list, n_pts=100):
-        """
-        -----------------------------------------------------------------------
-        | Method for generating the objects of all the NACA 4- and 5- digit   |
-        | foils supplied in the input list of strings                         |
-        -----------------------------------------------------------------------
-        """
-        nacafoils = []
-        for f in nacanrs:
-            naca_airfoil = NACA(f, includeTE=False, n_pts=100)
-            nacafoils.append(naca_airfoil)   
-        return nacafoils
-    
-    @staticmethod
-    def makeall_NACA5():
-        naca5nrs = NACAs.makeall_NACA5nrs()
-        naca5s = NACAs.generate_NACA_foils(naca5nrs)
-        return naca5s
-
-
-class PlotFoil: 
-    def from_list(foils):
+    def plot(self):
         fig = plt.figure(figsize=(7, 5), facecolor='#212946')
         ax = fig.add_subplot(111)
         ax.set_facecolor('#212946')
-        n = len(foils)
+        n = len(self.foils)
         color = matplotlib.cm.cool(np.linspace(0, 1, n))
 
         i = 0
         for _, c in zip(range(n), color):
-            x = foils[i].pts[:,0]
-            y = foils[i].pts[:,1]          
-            ax.plot(x, y, color=c, linestyle='solid', linewidth=1, zorder=6, label=foils[i].name)
+            x = self.foils[i].pts[:,0]
+            y = self.foils[i].pts[:,1]          
+            ax.plot(x, y, color=c, linestyle='solid', linewidth=1, zorder=6, label=self.foils[i].name)
             for cont in range(6, 1, -1):
                 ax.plot(x, y, lw=cont, color=c, zorder=5,
                     alpha=0.05)
@@ -475,28 +445,113 @@ class PlotFoil:
             tick.set_color('#DFE0E1')
         for tick in ax.get_yticklabels():
             tick.set_color('#DFE0E1')
-
-
+ 
         ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE') #xlabel
         ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')#ylabel
         ax.set_title("Airfoil Comparison", color='#08F7FE')
         legend = ax.legend(loc="upper right", frameon=False, labelcolor='linecolor')
+
+
+
+ 
+class NACAs(FoilGroup):
+ 
+    def __init__(self, nrs=[], **kwargs):
+        super().__init__()
+        
+        self.nrs = nrs
+        if len(self.nrs) > 0:
+            self.generate_NACA_foils(self.nrs)
+        
+    @staticmethod
+    def allnumbers():
+        naca5nrs = NACAs.getall_NACA5nrs()
+        naca4nrs = NACAs.getall_NACA4nrs()
+        nacanrs = naca4nrs + naca5nrs
+        return nacanrs
+    
+    @staticmethod     
+    def naca4nrs():
+        """
+        -----------------------------------------------------------------------
+        | Method for making all the realistic NACA 4 numbers                  |
+        -----------------------------------------------------------------------
+        """
+        naca4nrs = []
+        for m in range(10):
+            for p in range(1,10):
+                for t in range(1,40):
+                    if t < 10:
+                        t = "0"+str(t)                                         # Thickness should always be two digits so fx "9" should be "09"
+                    else:
+                        t = str(t)
+                    nacanumber = str(m)+str(p)+t
+                    naca4nrs.append(nacanumber)
+        return naca4nrs
+                    
+    
+    @staticmethod
+    def naca5nrs():
+        """
+        -----------------------------------------------------------------------
+        | Method for making all the realistic NACA 5 numbers                  |
+        -----------------------------------------------------------------------
+        """
+        naca5nrs = []
+        for l in range(1,7):
+            for p in range(3,5):
+                for q in range(2):
+                    for t in range(1,40):
+                        if t < 10:
+                            t = "0"+str(t)
+                        else:
+                            t = str(t)
+                        nacanumber = str(l)+str(p)+str(q)+t
+    
+                        naca5nrs.append(nacanumber)
+        return naca5nrs
+    
+    
+    def generate_NACA_foils(self, nacanrs : list, n_pts=100):
+        """
+        -----------------------------------------------------------------------
+        | Method for generating the objects of all the NACA 4- and 5- digit   |
+        | foils supplied in the input list of strings                         |
+        -----------------------------------------------------------------------
+        """
+    
+        for f in nacanrs:
+            naca_airfoil = NACA(f, includeTE=False, n_pts=100)
+            self.foils.append(naca_airfoil)   
+        
+    def makeall_NACA5(self):
+        self.generate_NACA_foils(NACAs.naca5nrs())
+         
+    def makeall_NACA4(self):
+        self.generate_NACA_foils(NACAs.naca4nrs())
+         
+
 # =============================================================================
 # 
 # =============================================================================
-
-airfoiL = DataFoil("risoe_a_21")
-airfoiL.set_chord(5.12)
-airfoiL.plot()
-print(airfoiL)
-
-
-
-airfoiL2 = NACA("2412")
-airfoiL2.set_chord(3.14)
-airfoiL2.plot()
-print(airfoiL2)
-
+myfoils = NACAs()
+myfoils.makeall_NACA5()
+f=myfoils.foils
+myfoils.plot()
+# =============================================================================
+# airfoiL = DataFoil("risoe_a_21")
+# airfoiL.set_chord(5.12)
+# airfoiL.plot()
+# print(airfoiL)
+# 
+# 
+# 
+# airfoiL2 = NACA("2412")
+# airfoiL2.set_chord(3.14)
+# airfoiL2.plot()
+# print(airfoiL2)
+# 
+# =============================================================================
 
 
 
