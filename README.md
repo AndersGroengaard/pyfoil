@@ -63,7 +63,7 @@
 <!-- Features -->
 <h2 id="features"> :dart: FEATURES </h2>
 
-* <b> Generate one, more or all NACA Airfoils: </b>
+* <b> Generate one or more NACA Airfoils: </b>
  Currently the NACA foil families that can be generated are:
   - NACA 4-Digit
   - NACA 4-Digit Modified
