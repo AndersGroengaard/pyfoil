@@ -42,6 +42,8 @@ _Repository containing python scripts for generating or fetching various airfoil
     <li><a href="#license"> ➤ License</a></li>
   </ol>
 </details>
+
+ <br/>
  
 <!-- ABOUT THE PROJECT -->
 <h2 id="about"> :clipboard: About</h2>
@@ -158,4 +160,4 @@ Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroeng
 
 This project is licensed under a GNU GENERAL PUBLIC LICENSE - see the LICENSE.md file for details
 
-
+<br/>
