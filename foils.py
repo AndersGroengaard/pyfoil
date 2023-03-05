@@ -36,7 +36,9 @@ class Foil:
         self.c = 1
         self.x = None
         self.yt = None
+        self.base_pts = None
         self.pts = None
+   
         
     def set_chord(self, c):
         """
@@ -45,7 +47,7 @@ class Foil:
         -----------------------------------------------------------------------
         """
         self.c = c
-        self.pts = self.pts*c
+        self.pts = self.base_pts*self.c
     
     def location(self, loc=(0,0,0)):
         self.pts + loc     
@@ -66,7 +68,9 @@ class Foil:
         
         if self.x is not None and self.yc is not None:
             plot_glowing_line(ax, self.x, self.yc, 
-                              'green', linestyle='dashed', label="camber line")
+                              '#00ff9f',
+                            #  '#ea00d9', 
+                              linestyle='dashed', label="camber line")
 
         ax.fill(self.pts[:,0], self.pts[:,1], color=foil_color, alpha=0.25, zorder=1)      
         plot_glowing_line(ax, self.pts[:,0], self.pts[:,1], foil_color, label="Foil Surface")
@@ -127,18 +131,19 @@ class DataFoil(Foil):
         
         if os.path.exists(foil_path):
             
-            self.pts = np.genfromtxt(r'./foil_lib/'+self.name+'.dat', 
+            self.base_pts = np.genfromtxt(r'./foil_lib/'+self.name+'.dat', 
                                     skip_header=0, dtype=float, 
                                     invalid_raise=False, 
                                     usecols = (0, 1))
             
-            if pts.shape[1] == 2:                                              # If we only have x and y coordinates, we need to add a z vector as well
-                Pts_z = np.zeros(np.size(self.pts[:,0]))                       # Initializing z-vector
+            if self.base_pts.shape[1] == 2:                                    # If we only have x and y coordinates, we need to add a z vector as well
+                Pts_z = np.zeros(np.size(self.base_pts[:,0]))                  # Initializing z-vector
     
-                self.pts = np.concatenate((self.pts, 
+                self.base_pts = np.concatenate((self.base_pts, 
                                            Pts_z.T[:, None]), 
                                            axis=1)
- 
+            self.pts = self.base_pts
+    
             self.n_pts = len(self.pts) 
             
         
@@ -156,7 +161,7 @@ class NACA(Foil):
     
     descr = "NACA Foil Object"
     
-    __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x')
+    __slots__ = ('NACAnr', 'name', 'n_pts', 'includeTE', 'TE', 'x', 'cos_space')
     
     def __init__(self, name, **kwargs):
         super().__init__(name)
@@ -238,7 +243,7 @@ class NACA(Foil):
         self.TT = float(self.NACAnr[2:4])/100                                  # Max thickness
         
  
-        x1, x2 = np.split(self.x, [int(P*len(self.x))])
+        x1, x2 = np.split(self.x, [np.argmax(self.x>P)])
     
         if M == 0:
             self.yc = np.zeros(len(self.x))
@@ -378,8 +383,8 @@ class NACA(Foil):
             a1 = (0.3/T) - (15/8)*(a0/np.sqrt(T)) - (T/(10*rho1))              # (A-27)
             a2 = -1*(0.3/(T**2)) + (5/4)*(a0/(T**(3/2))) + 1/(5*rho1)          # (A-28)
             a3 = 0.1/(T**3) - ((0.375*a0)/(T**(5/2))) - ( 1/(10*rho1*T))       # (A-29)
-            
-            x1, x2 = np.split(self.x, [int(T*len(self.x))])
+         
+            x1, x2 = np.split(self.x, [np.argmax(self.x>T)])
             yt1 = 5*self.TT*(a0*np.sqrt(x1) + a1*x1 + a2*(x1**2) + a3*(x1**3)) # (A-19)
             yt2 = 5*self.TT*(0.002 + d1*(1-x2) + d2*((1-x2)**2) + d3*((1-x2)**3))        # (A-20)
             self.yt =  np.concatenate((yt1, yt2))
@@ -403,16 +408,20 @@ class NACA(Foil):
         theta = np.arctan(self.dyc_dx)
         
         if self.includeTE:
-            te_pts = int(np.size(self.yt) * self.TE)
+            
+            #te_pts = int(np.size(self.yt) * self.TE)
+            te_pts = np.argmax(self.x>self.TE)
             self.yt =  np.delete(self.yt, np.arange(te_pts, self.n_pts))
+
             theta = np.delete(theta, np.arange(te_pts, self.n_pts))
-            yc = np.delete(self.yc, np.arange(te_pts, self.n_pts))
+            self.yc = np.delete(self.yc, np.arange(te_pts, self.n_pts))
             self.x = np.delete(self.x, np.arange(te_pts, self.n_pts))
             x_te = np.linspace(np.pi/2 - -theta[-1], 
                                -np.pi / 2 + theta[-1], 
-                               2*(self.n_pts - len(self.x))) # Angles
+                               2*(self.n_pts - len(self.x)))                   # Angles
+            
             TEx = self.yt[-1] * np.cos(x_te) + self.x[-1]                      # Trailing edge x-coordinates, parametric circle equation    
-            TEy = self.yt[-1] * np.sin(x_te) + yc[-1]                          # Trailing edge y-coordinates, Parametric circle equation    
+            TEy = self.yt[-1] * np.sin(x_te) + self.yc[-1]                     # Trailing edge y-coordinates, Parametric circle equation    
  
         xu = self.x  - self.yt*np.sin(theta)                                   # Upper surface points
         yu = self.yc + self.yt*np.cos(theta)                                   # Upper surface points
@@ -428,17 +437,17 @@ class NACA(Foil):
 
         Pts_z = np.zeros(np.size(Pts_y))                                       # Initializing z-vector
 
-        self.pts = np.concatenate((Pts_x.T[:, None], 
+        self.base_pts = np.concatenate((Pts_x.T[:, None], 
                                    Pts_y.T[:, None], 
                                    Pts_z.T[:, None]), 
                                    axis=1)
         
-        
+        self.pts = self.base_pts
 
 
 
 
-
+ 
 
 
 
@@ -599,33 +608,9 @@ class NACAs(FoilGroup):
         self.generate_NACA_foils(NACAs.naca4nrs())
          
 
-# =============================================================================
-# 
-# =============================================================================
  
 
 
-name = "ag17"
-
-foil_path = r'./foil_lib/'+ name+'.dat'
-
-if os.path.exists(foil_path):
-    
-    pts = np.genfromtxt(r'./foil_lib/'+name+'.dat', 
-                            skip_header=0, dtype=float, 
-                            invalid_raise=False, 
-                            usecols = (0, 1))
-    
-    Pts_z = np.zeros(np.size(pts[:,1]))                                       # Initializing z-vector
-
-    pts = np.concatenate((pts, 
-                          Pts_z.T[:, None]), 
-                         axis=1)
-    
-    
-
-    
-    n_pts = len(pts) 
 
 
 
@@ -635,51 +620,7 @@ if os.path.exists(foil_path):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# =============================================================================
-# airfoiL = DataFoil("s8052")
-# airfoiL.set_chord(5.12)
-# airfoiL.plot()
-# print(airfoiL)
-# 
-# 
-# 
-# airfoiL2 = NACA("2412")
-# airfoiL2.set_chord(3.14)
-# airfoiL2.plot()
-# print(airfoiL2)
-# 
-# 
-# 
-# 
-# 
-# =============================================================================
-
-
-
-
-# =============================================================================
-# 
-# lib = DataFoils()
-# lib.list_library()
-# test = lib.nrs
-# 
-# 
-# 
-# =============================================================================
-
-
+ 
  
 #65,3-218, a=O.5, 
 
