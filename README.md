@@ -49,7 +49,7 @@ _Repository containing python scripts for generating or fetching various airfoil
 <p align="justify"> 
    The intended purpose of this package is to serve as a tool to find the best airfoil shape for your engineering application.
  
-   I hope you make some efficient wind (or water!) turbines for some renewable energy, and/or energy-efficient vehicles :airplane: so we can save the planet :earth_africa: 
+   Hope you make some efficient wind (or water!) turbines for some renewable energy, and/or energy-efficient vehicles :airplane: so we can save the planet :earth_africa: 
 </p>
 
 
@@ -84,16 +84,16 @@ Foils are generated according to the definition stated on the  <a href="https://
  
 <p align="justify"> 
    WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
-I would like to turn this into a full Python package at some point
+
 </p>
 
 
 
-Locally, I had made a prototype for generating multi-element airfoils, which in its GUI form looked like this:
+Currently, a prototype is under development for generating multi-element airfoils, which in its GUI form looks like this:
 
 <img src="./doc/gui.png" width="700">
 
-Which gives a rough direction of what I would like to achieve
+Which gives a rough direction of where this project is going.
 
 
 <br/><br/>
