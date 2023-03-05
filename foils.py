@@ -5,13 +5,7 @@ from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 import matplotlib
 
-# =============================================================================
-#  Muligt ting at undersøge:
-#    - von Karman ogive, von karman waverider
-#    - nose cone design
-#    - LH Haack
-# =============================================================================
- 
+
 
 
 
@@ -39,8 +33,10 @@ class Foil:
     
     def __init__(self, name):
         self.name = name
+        self.c = 1
         self.x = None
         self.yt = None
+        self.pts = None
         
     def set_chord(self, c):
         """
@@ -48,8 +44,13 @@ class Foil:
         | Method for scaling the foil chord length                            |
         -----------------------------------------------------------------------
         """
-        self.PTS = self.pts*c
-
+        self.c = c
+        self.pts = self.pts*c
+    
+    def location(self, loc=(0,0,0)):
+        self.pts + loc     
+        
+        
     def plot(self):
         """
         -----------------------------------------------------------------------
@@ -131,7 +132,15 @@ class DataFoil(Foil):
                                     invalid_raise=False, 
                                     usecols = (0, 1))
             
+            if pts.shape[1] == 2:                                              # If we only have x and y coordinates, we need to add a z vector as well
+                Pts_z = np.zeros(np.size(self.pts[:,0]))                       # Initializing z-vector
+    
+                self.pts = np.concatenate((self.pts, 
+                                           Pts_z.T[:, None]), 
+                                           axis=1)
+ 
             self.n_pts = len(self.pts) 
+            
         
         else:
             raise Exception(f'An airfoil by the name of {self.name} was not found in the database' )
@@ -416,8 +425,13 @@ class NACA(Foil):
         else:
             Pts_x = np.append(xu, np.flip(xl))
             Pts_y = np.append(yu, np.flip(yl)) 
- 
-        self.pts = np.concatenate((Pts_x.T[:, None], Pts_y.T[:, None]), axis=1)
+
+        Pts_z = np.zeros(np.size(Pts_y))                                       # Initializing z-vector
+
+        self.pts = np.concatenate((Pts_x.T[:, None], 
+                                   Pts_y.T[:, None], 
+                                   Pts_z.T[:, None]), 
+                                   axis=1)
         
         
 
@@ -589,6 +603,50 @@ class NACAs(FoilGroup):
 # 
 # =============================================================================
  
+
+
+name = "ag17"
+
+foil_path = r'./foil_lib/'+ name+'.dat'
+
+if os.path.exists(foil_path):
+    
+    pts = np.genfromtxt(r'./foil_lib/'+name+'.dat', 
+                            skip_header=0, dtype=float, 
+                            invalid_raise=False, 
+                            usecols = (0, 1))
+    
+    Pts_z = np.zeros(np.size(pts[:,1]))                                       # Initializing z-vector
+
+    pts = np.concatenate((pts, 
+                          Pts_z.T[:, None]), 
+                         axis=1)
+    
+    
+
+    
+    n_pts = len(pts) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # =============================================================================
 # airfoiL = DataFoil("s8052")
 # airfoiL.set_chord(5.12)
