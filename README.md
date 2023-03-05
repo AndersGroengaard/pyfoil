@@ -24,7 +24,7 @@
  
 </div>
 
-<br /><br />
+<br/>
 _Repository containing python scripts for generating or fetching various airfoils_
 
  
@@ -52,11 +52,7 @@ _Repository containing python scripts for generating or fetching various airfoil
    Hope you make some efficient wind (or water!) turbines for some renewable energy, and/or energy-efficient vehicles :airplane: so we can save the planet :earth_africa: 
 </p>
 
-
-
-
-
-<br/><br/>
+<br/> 
 
 
 <!-- Features -->
@@ -72,12 +68,16 @@ Foils are generated according to the definition stated on the  <a href="https://
 
 > "The coordinates order starts from upper surface trailing edge, then wraps around the leading edge to the lower surface trailing edge"
 
-<!-- Features -->
+<br/> 
+
+<!-- Planned Features -->
 <h2 id="planned-features"> :goal_net: PLANNED FEATURES </h2>
 
 * Fetch historical airfoils
 * Create multi-element airfoils.
 * Load a datasheet with a timeseries of wind speeds and angles of attacks, and find the best performing airfoil in terms of lift-to-drag ratio.
+
+<br/> 
 
 <!-- Limitations -->
 <h2 id="limitations"> :warning:  Limitations  :warning: </h2>
@@ -96,7 +96,7 @@ Currently, a prototype is under development for generating multi-element airfoil
 Which gives a rough direction of where this project is going.
 
 
-<br/><br/>
+<br/> 
 
 ## :man_technologist: How to use :woman_technologist: 
 
@@ -145,12 +145,14 @@ foils.plot()
 <img src="./doc/multiple_foils.png" width="700">
 
 
+<br/>
 
 ## Authors
 
 Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroengaard)
 
- 
+
+<br/>
 
 <h2 id="license"> :book: License</h2>
 
