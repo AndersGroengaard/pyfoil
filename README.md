@@ -42,6 +42,8 @@
     <li><a href="#features"> ➤ Features</a></li>
     <li><a href="#planned-features"> ➤ Planned Features</a></li>
     <li><a href="#limitations"> ➤ Limitations</a></li>
+    <li><a href="#howtouse"> ➤ How to use</a></li>
+    <li><a href="#authors"> ➤ Authors</a></li>
     <li><a href="#license"> ➤ License</a></li>
   </ol>
 </details>
@@ -104,8 +106,8 @@ Which gives a rough direction of where this project is going.
 
 <br/> 
 
-## :man_technologist: How to use :woman_technologist: 
-
+ 
+<h2 id="howtouse">  :man_technologist: HOW TO USE  :woman_technologist: </h2>
 
 
 
@@ -153,7 +155,8 @@ foils.plot()
 
 <br/>
 
-## Authors
+ 
+<h2 id="authors"> :goal_net: AUTHORS </h2>
 
 Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroengaard)
 
