@@ -68,6 +68,7 @@
   - NACA 4-Digit
   - NACA 4-Digit Modified
   - NACA 5-Digit 
+  - NACA 16-Series
   
 Foils are generated according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a>, in which is stated:
 
