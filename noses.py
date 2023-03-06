@@ -1,43 +1,53 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Mar  5 11:13:25 2023
-
-@author: ander
-"""
+ 
 # =============================================================================
 #  Muligt ting at undersøge:
 #    - von Karman ogive, von karman waverider
-#    - nose cone design
-#    - LH Haack
-# =============================================================================
+ 
  
 import numpy as np
 import matplotlib.pyplot as plt
 
-def lvhaack():
-    """
-    Von Karman & L-V Haack 
-    """
-   
-    nose_length=12   
-    cone_diameter=2  #diameter  
-    x_res=.01 
-    k=0    
-    C=0.333333     
-    
-    x_arr = np.linspace(0,x_res, nose_length)    
-    x=x_arr/nose_length;    
-    h=np.arccos(1-2*x);   
-    r= np.sqrt((h-(1/2)*np.sin(2*h)+(C*((np.sin(h))**3)*h))/np.pi);  
-    r=r*(cone_diameter*2);
-    
-    
- 
-    fig = plt.figure(figsize=(7, 5), facecolor='#212946')
-    ax = fig.add_subplot(111)
-    ax.set_facecolor('#212946')
- 
-    ax.plot(x, r, linestyle='solid', linewidth=1, zorder=6)
- 
+class Nose:
+    def __init__(self):
+        print("Nosey")
+        self.x = None
+        self.y = None
+        
+    def plot(self):    
+        fig = plt.figure(figsize=(7, 5), facecolor='#212946')
+        ax = fig.add_subplot(111)
+        ax.set_facecolor('#212946') 
+        ax.plot(self.x, self.y, linestyle='solid', color="green", linewidth=1, zorder=6)
 
-#lvhaack()
+  
+ 
+class Haack(Nose):
+    def __init__(self, L=1, R=1, C=0.3333, n_pts=100):
+        """
+        -----------------------------------------------------------------------
+        |  Von Karman & L-V Haack                                             |
+        |    LD-Haack (Von Kármán)	C=0                                       |
+        |    LV-Haack	            C=1/3                                     |
+        |    Tangent	            C=2/3                                     |
+        |                                                                     |
+        |  Equations source: https://en.wikipedia.org/wiki/Nose_cone_design   |
+        |  "LD-Haack where C = 0, is commonly called the Von Kármán ogive."   |
+        ----------------------------------------------------------------------- 
+        """
+        super().__init__()
+        self.x = np.linspace(0,L,n_pts)    
+        theta = np.arccos(1-(2*self.x)/L)
+        self.y = (R/np.sqrt(np.pi)) * np.sqrt(theta - (np.sin(2*theta)/2) + ( C*((np.sin(theta))**3) ))  
+         
+        
+class Power(Nose):
+    def __init__(self):    
+        super().__init__()
+        
+class Parabolic(Nose):    
+   def __init__(self):    
+       super().__init__()
+       
+if __name__ == "__main__":   
+    naese = Haack()
+    naese.plot()

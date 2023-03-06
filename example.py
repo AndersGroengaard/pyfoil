@@ -7,7 +7,7 @@
 from foils import NACA, DataFoil
 
 # NACA 4-Digit airfoil:
-airfoil = NACA("6409", includeTE=True, cos_space=True)
+airfoil = NACA("6409")
 
 # If you want to retrieve the pts:
 airfoil_pts = airfoil.pts   
@@ -17,38 +17,42 @@ airfoil_pts = airfoil.pts
 
 
 # NACA 5-Digit airfoil:
-airfoil2 = NACA("23116", includeTE=True, cos_space=True)
+airfoil2 = NACA("23116")
 #airfoil2.plot()
 #airfoil2.save()
 
-airfoil3 = NACA("7314-33", includeTE=True, cos_space=True)
+airfoil3 = NACA("7314-33")
 airfoil3.plot()
 
-airfoil4 = NACA("7314-33", includeTE=True, cos_space=False)
+
+airfoil4 = NACA("16-009")
 airfoil4.plot()
 
+airfoil4 = NACA("16-512")
+airfoil4.plot()
 
-airfoiL5 = DataFoil("s8052")
-airfoiL5.set_chord(5.12)
-#airfoiL5.plot()
-print(airfoiL5)
+airfoil6 = NACA("16-521")
+airfoil6.plot()
+
+airfoil76 = NACA("16-530")
+airfoil76.plot()
+
+# =============================================================================
+# airfoiL5 = DataFoil("s8052")
+# airfoiL5.set_chord(5.12)
+# #airfoiL5.plot()
+# print(airfoiL5)
+# =============================================================================
 # 
 # =============================================================================
 #  Mutiple airfoils
 # =============================================================================
 
-#import numpy as np
-#x = np.linspace(0, 1, 10)
-# Generate mupltiple airfoils by name:
-#test = x > 0.4
-#x1, x2 = np.split(x, [np.argmax(x>0.3)])
-#from foils import NACAs 
- 
-# =============================================================================
-# my_foils = ['1512', '3512', '5512', '7512', '9512']
-# foils = NACAs(my_foils)
-# foils.plot()
-# =============================================================================
+from foils import NACAs
+
+my_foils = ['1512', '3512', '5512', '7512', '9512']
+foils = NACAs(my_foils)
+foils.plot()
 
 
 #foils = NACAs()

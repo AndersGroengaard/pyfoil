@@ -11,7 +11,8 @@ import matplotlib
 
 def plot_glowing_line(ax, x, y, color, linestyle='solid', linewidth=1, label=""):
     """
-     
+    ---------------------------------------------------------------------------
+    ---------------------------------------------------------------------------     
     """
     ax.plot(x, y, color=color, linestyle=linestyle, 
             linewidth=linewidth, zorder=2, label=label)
@@ -151,7 +152,7 @@ class DataFoil(Foil):
             raise Exception(f'An airfoil by the name of {self.name} was not found in the database' )
         
     def __str__(self) -> str:
-        return f' An {self.name} airfoil imported from a database consisting of {self.n_pts} points'             
+        return f'An {self.name} airfoil imported from a database consisting of {self.n_pts} points'             
  
     def __repr__(self):
         return f'NACA(\'{self.NACAnr}\', n_pts={self.n_pts}, includeTE={self.includeTE}, TE={self.TE})'
@@ -186,7 +187,7 @@ class NACA(Foil):
         self.n_pts = kwargs.get("n_pts", 100)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
-        self.cos_space = kwargs.get("cos_space", False)       
+        self.cos_space = kwargs.get("cos_space", True)       
         
         if self.cos_space:
            beta = np.linspace(0, np.pi, self.n_pts)
@@ -196,24 +197,37 @@ class NACA(Foil):
     
         if len(self.NACAnr) == 4:
             self.four_digit()
-            self.calculate_thickness_distribution()
-            
+            self.calculate_thickness_distribution()        
         elif len(self.NACAnr) == 5:
             self.five_digit()
             self.calculate_thickness_distribution()
+        elif len(self.NACAnr) == 6 and self.NACAnr[:2] == "16" and self.NACAnr[2] == "-": # Conditions for a 16-series airfoil
             
-        elif len(self.NACAnr) == 7 and self.NACAnr[4] == '-':
+            self.TT = float(self.NACAnr[4:6])/100
+            self.T = 0.5
+            self.I = 4
+            self.cL = float(self.NACAnr[3])/10                                 # First digit after dash designates the design lift coefficient in fractions of ten
+            
+            self.sixteen_series()
+            self.calculate_thickness_distribution(t_type='modified')
+            
+        elif len(self.NACAnr) == 7 and self.NACAnr[4] == '-':                  # NACA Four digit modified
+        
+              
+            self.I = float(self.NACAnr[5])                                          # Designation of the leading edge radius
+            self.T = float(self.NACAnr[6])/10                                       # chordwise position of maximum thickness in tenths of chord
+            
             self.four_digit()
             self.calculate_thickness_distribution(t_type='modified')
         else:
-            raise Exception("Sorry, input NACA number must be a 4 or 5 digit ")
+            raise Exception("Sorry, could not find an appropriate method for NACA number supplied")
             
         self.calculate_ordinates()
             
     def __str__(self):
         self.string = f'A generated {self.name} airfoil from {self.n_pts} points'    
         if self.includeTE:
-            self.string += ' including a trailing edge placed at {self.TE} of chord length'         
+            self.string += f' including a rounded trailing edge placed at {self.TE} of chord length'         
         return self.string
 
     def __repr__(self):
@@ -301,7 +315,7 @@ class NACA(Foil):
         self.dyc_dx = ((k1/6)*(3*self.x**2-6*m*self.x+m**2*(3-m)))*(self.x<P)+(-1*((k1*m**3)/6))*(self.x >= P)
 
 
-    def six_series(self, a=1):
+    def six_series(self, a=1, cli=1):
         """
         -----------------------------------------------------------------------
         WIP
@@ -321,10 +335,12 @@ class NACA(Foil):
         -----------------------------------------------------------------------
         """
  
-        b = 1.0           
-        cli = 1;
-        
-        g = -1/(b-a) * ( a**2 * (0.5* np.log(a) -0.25) - b**2 * (0.5 * np.log(b) - 0.25) )   
+        b = 1       
+       
+        if b == a:  # Catching a potential division by zero error
+            g = 0 
+        else:
+            g = -1/(b-a)*((a**2)*(0.5*np.log(a) -0.25) - b**2*(0.5*np.log(b) - 0.25))   
          
         h = 0
         if 0 <= a < 1:
@@ -335,11 +351,37 @@ class NACA(Foil):
             h-= 0.25*(1-a)**2
         h += g
         
-        self.yc = cli/(2*np.pi*(a+b))*(1/(b-a)*(0.5*(a-self.x)**2* np.log(abs(a-self.x)) - 0.5*(b-self.x)**2*np.log(abs(b-self.x)) + 0.25*(b-self.x)**2 - 0.25*(a-self.x)**2) - self.x*np.log(self.x) + g - h*self.x) 
+        
+      #  y1 =  cli/(2*np.pi*(a+b))  #*  
+     #   y2 = (1/(b-a)*(0.5*(a-self.x)**2* np.log(abs(a-self.x)))
+     #   y3 =  0.5*(b-self.x)**2*np.log(abs(b-self.x))    
+                                     
+        if b == a:  # Catching a potential division by zero error
+            self.yc = (cli/(4*np.pi))* ((np.log(1/(1-self.x))) + self.x* np.log((1-self.x)/self.x))
+           # self.yc = (cli/(4*np.pi))* ((1-self.x)**2) * np.log(1-self.x)
+            self.dyc_dx = (cli*(2*np.log(1-self.x)+1)*(self.x-1))/(4*np.pi)
+        else:
+            self.yc = cli/(2*np.pi*(a+b))  *  (1/(b-a)*(0.5*(a-self.x)**2* np.log(abs(a-self.x)) - 0.5*(b-self.x)**2*np.log(abs(b-self.x)) + 0.25*(b-self.x)**2 - 0.25*(a-self.x)**2) - self.x*np.log(self.x) + g - h*self.x) 
     
       #  pts = np.concatenate((x.T[:, None], y.T[:, None]), axis=1)
 
+    def sixteen_series(self):
+        """
+        -----------------------------------------------------------------------
+        | The NACA 16-series airfoil family                                   |
+        |                                                                     |
+        |   An example is:  NACA 16-012                                       |
+        |   The first two digits "16" indicates that this is a sixteen series |
+        |   airfoil.                                                          |
+        |   The first digit after dash designates the design lift             |
+        |   coefficient in fractions of ten.                                  |
+        |   The last two digits indicate the thickness in % of chord          |
+        |_____________________________________________________________________|
+        """
+       # self.NACAnr = "16-012"
 
+        self.six_series(a=1, cli=self.cL)                                      # The six series method is used to calculate the camberline
+ 
     def calculate_thickness_distribution(self, t_type="normal"):
         """
         -----------------------------------------------------------------------
@@ -363,30 +405,28 @@ class NACA(Foil):
         if t_type == "modified": #
           
             # Equtions Source: Geometry for Aerodynamicists
-           
-            I = float(self.NACAnr[5])                                          # Designation of the leading edge radius
-            T = float(self.NACAnr[6])/10                                       # chordwise position of maximum thickness in tenths of chord
+     
             
-            d1 = (2.24 - 5.42*T + 12.3*T**2) / (10*(1-0.878*T))                # (A-21) Riegels approximation
-            d2 = (0.294 - 2*(1-T)*d1) / ((1-T)**2)                             # (A-22)
-            d3 = (-0.196 + (1-T)*d1)/((1-T)**3)                                # (A-23)
+            d1 = (2.24 - 5.42*self.T + 12.3*self.T**2) / (10*(1-0.878*self.T)) # (A-21) Riegels approximation
+            d2 = (0.294 - 2*(1-self.T)*d1) / ((1-self.T)**2)                   # (A-22)
+            d3 = (-0.196 + (1-self.T)*d1)/((1-self.T)**3)                      # (A-23)
             
-            if I <= 8:
-                Xi_LE = I/6
+            if self.I <= 8:
+                Xi_LE = self.I/6
             else:
                 Xi_LE = 10.3933                                                # (A-25)
                 
             a0 = 0.296904*Xi_LE                                                # (A-24)
             
-            rho1 = (1/5)*(((1-T)**2)/(0.588-2*d1*(1-T)))                       # (A-26)
+            rho1 = (1/5)*(((1-self.T)**2)/(0.588-2*d1*(1-self.T)))             # (A-26)
             
-            a1 = (0.3/T) - (15/8)*(a0/np.sqrt(T)) - (T/(10*rho1))              # (A-27)
-            a2 = -1*(0.3/(T**2)) + (5/4)*(a0/(T**(3/2))) + 1/(5*rho1)          # (A-28)
-            a3 = 0.1/(T**3) - ((0.375*a0)/(T**(5/2))) - ( 1/(10*rho1*T))       # (A-29)
+            a1 = (0.3/self.T)-(15/8)*(a0/np.sqrt(self.T)) - (self.T/(10*rho1)) # (A-27)
+            a2 = -1*(0.3/(self.T**2))+(5/4)*(a0/(self.T**(3/2))) + 1/(5*rho1)  # (A-28)
+            a3 = 0.1/(self.T**3)-((0.375*a0)/(self.T**(5/2)))-(1/(10*rho1*self.T))       # (A-29)
          
-            x1, x2 = np.split(self.x, [np.argmax(self.x>T)])
+            x1, x2 = np.split(self.x, [np.argmax(self.x>self.T)])              # Splitting the x array in two where x hits the T value
             yt1 = 5*self.TT*(a0*np.sqrt(x1) + a1*x1 + a2*(x1**2) + a3*(x1**3)) # (A-19)
-            yt2 = 5*self.TT*(0.002 + d1*(1-x2) + d2*((1-x2)**2) + d3*((1-x2)**3))        # (A-20)
+            yt2 = 5*self.TT*(0.002 + d1*(1-x2) + d2*((1-x2)**2) + d3*((1-x2)**3)) # (A-20)
             self.yt =  np.concatenate((yt1, yt2))
             
         else:                                                                  # Else, we calculate the thickness distribution using the NACA 4-Digit method
@@ -473,19 +513,22 @@ class FoilGroup:
         n = len(self.foils)
         color = matplotlib.cm.cool(np.linspace(0, 1, n))
 
+        colors = []
         i = 0
-        for _, c in zip(range(n), color):
+        for _, glow_color in zip(range(n), color):
             x = self.foils[i].pts[:,0]
             y = self.foils[i].pts[:,1]          
  
-            ax.plot(x, y, color=c, linestyle='solid', linewidth=1, zorder=6, label=self.foils[i].name)
+            line = ax.plot(x, y, color=glow_color, linestyle='solid', linewidth=1, zorder=6, label=self.foils[i].name)
+            colors.append(glow_color)          
+        
             for cont in range(6, 1, -1):
-                ax.plot(x, y, lw=cont, color=c, zorder=5,
+                ax.plot(x, y, lw=cont, color=glow_color, zorder=5,
                     alpha=0.05)
             i +=1
             
         ax.axis('equal')        
-          
+        
         plt.grid(color='#2A3459', linestyle='solid')
  
         for spine in ax.spines.values():
@@ -500,8 +543,13 @@ class FoilGroup:
         ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE') #xlabel
         ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')#ylabel
         ax.set_title("Airfoil Comparison", color='#08F7FE')
-        legend = ax.legend(loc="upper right", frameon=False, labelcolor='linecolor')
 
+        #plt.legend(loc="upper right", frameon=False, labelcolor='linecolor') 
+
+        leg = ax.legend(loc="upper right", frameon=False)
+        
+        for color,text in zip(colors,leg.get_texts()):
+            text.set_color(color)
 
 class DataFoils:
     def __init__(self, **kwargs):
