@@ -1,3 +1,16 @@
+"""
+===============================================================================
+ THE PYFOIL PROJECT 2023
+===============================================================================
+ 
+    Script containing classes and methods for creating/instantiating 
+    airfoil objects.                                                                     
+     
+    written in Python 3.9 by Anders C. Grøngaard                   
+                                                     
+===============================================================================
+"""    
+
 
 import os
 import numpy as np
