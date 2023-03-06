@@ -364,15 +364,10 @@ class NACA(Foil):
             h-= 0.25*(1-a)**2
         h += g
         
-        
-      #  y1 =  cli/(2*np.pi*(a+b))  #*  
-     #   y2 = (1/(b-a)*(0.5*(a-self.x)**2* np.log(abs(a-self.x)))
-     #   y3 =  0.5*(b-self.x)**2*np.log(abs(b-self.x))    
-                                     
-        if b == a:  # Catching a potential division by zero error
+  
+        if b == a:                                                             # Catching a potential division by zero error
             self.yc = (cli/(4*np.pi))* ((np.log(1/(1-self.x))) + self.x* np.log((1-self.x)/self.x))
-           # self.yc = (cli/(4*np.pi))* ((1-self.x)**2) * np.log(1-self.x)
-            self.dyc_dx = (cli*(2*np.log(1-self.x)+1)*(self.x-1))/(4*np.pi)
+            self.dyc_dx = (cli*( np.log((1-self.x)/self.x)) - np.log(1-self.x) ) /(4*np.pi)
         else:
             self.yc = cli/(2*np.pi*(a+b))  *  (1/(b-a)*(0.5*(a-self.x)**2* np.log(abs(a-self.x)) - 0.5*(b-self.x)**2*np.log(abs(b-self.x)) + 0.25*(b-self.x)**2 - 0.25*(a-self.x)**2) - self.x*np.log(self.x) + g - h*self.x) 
     
