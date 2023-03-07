@@ -21,6 +21,11 @@
 [![Generic badge](https://img.shields.io/badge/version-0.1.0_a-green)]()
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Size](https://img.shields.io/github/repo-size/AndersGroengaard/pyfoil)
+
+![GitHub top language](https://img.shields.io/github/languages/top/un-gcpds/pyfoil)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pyfoil)
+![GitHub last commit](https://img.shields.io/github/last-commit/un-gcpds/pyfoil)
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/UN-GCPDS/pyfoil)
  
  
  <br/>
@@ -158,7 +163,7 @@ foils.plot()
  
 <h2 id="authors"> :goal_net: AUTHORS </h2>
 
-Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AndersGroengaard)
+Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AnasGroene)
 
 
 <br/>
