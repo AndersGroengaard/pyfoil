@@ -198,15 +198,16 @@ class NACA(Foil):
         self.NACAnr = self.name
         self.name = "NACA"+self.NACAnr
         self.n_pts = kwargs.get("n_pts", 100)
+        self.x_n_pts = int(self.n_pts/2)
         self.includeTE = kwargs.get("includeTE", False) 
         self.TE = kwargs.get("TE", 0.9)         
         self.cos_space = kwargs.get("cos_space", True)       
-        
+   
         if self.cos_space:
-           beta = np.linspace(0, np.pi, self.n_pts)
+           beta = np.linspace(0, np.pi, self.x_n_pts)
            self.x = 0.5*(1-np.cos(beta))
         else:
-            self.x = np.linspace(0, 1, self.n_pts)#, dtype=np.float16)
+            self.x = np.linspace(0, 1, self.x_n_pts)#, dtype=np.float16)
     
         if len(self.NACAnr) == 4:
             self.four_digit()
@@ -226,7 +227,6 @@ class NACA(Foil):
             
         elif len(self.NACAnr) == 7 and self.NACAnr[4] == '-':                  # NACA Four digit modified
         
-              
             self.I = float(self.NACAnr[5])                                          # Designation of the leading edge radius
             self.T = float(self.NACAnr[6])/10                                       # chordwise position of maximum thickness in tenths of chord
             
@@ -294,7 +294,7 @@ class NACA(Foil):
         -----------------------------------------------------------------------
         |
         | values for P, M and K taken from : 
-            https://web.stanford.edu/~cantwell/AA200_Course_Material/The%20NACA%20airfoil%20series.pdf
+        |    https://web.stanford.edu/~cantwell/AA200_Course_Material/The%20NACA%20airfoil%20series.pdf
         -----------------------------------------------------------------------
         """
         print("Creating five digit NACA Airfoil: "+self.NACAnr)  
@@ -331,20 +331,21 @@ class NACA(Foil):
     def six_series(self, a=1, cli=1):
         """
         -----------------------------------------------------------------------
-        WIP
-        a (float) : A number between 0 and 1 -> 
-                "NACA 6-series airfoils produce a uniform chordwise loading
-                from the leading edge to the point x/c=a and a linearly decreasing 
-                load from this point to the trailing edge."
-                
-                Defaults to 1 : "When the mean-line designation is not given,
-                                it is understood that the uniform-load
-                                mean line (a=1.0) has been used. "
-                
-                (source: https://ntrs.nasa.gov/api/citations/19930090976/downloads/19930090976.pdf)
-                
-        cli (float) : Design lift coefficient        
-                
+        |
+        |   a (float) : A number between 0 and 1 -> 
+        |         "NACA 6-series airfoils produce a uniform chordwise loading
+        |          from the leading edge to the point x/c=a and a linearly 
+        |          decreasing load from this point to the trailing edge."
+        |       
+        |          Defaults to 1 : "When the mean-line designation is not
+        |                       given, it is understood that the uniform-load
+        |                       mean line (a=1.0) has been used. "
+        |        
+        | source: 
+        | https://ntrs.nasa.gov/api/citations/19930090976/downloads/19930090976.pdf
+        |        
+        |   cli (float) : Design lift coefficient        
+        |        
         -----------------------------------------------------------------------
         """
  
@@ -477,11 +478,15 @@ class NACA(Foil):
         yl = self.yc - self.yt*np.cos(theta)                                   # Lower surface points      
  
         if self.includeTE:
-            Pts_x = np.concatenate((xu, TEx, np.flip(xl)))
-            Pts_y = np.concatenate((yu, TEy, np.flip(yl)))   
+            #Pts_x = np.concatenate((xu, TEx, np.flip(xl)))
+           # Pts_y = np.concatenate((yu, TEy, np.flip(yl)))   
+            Pts_x = np.concatenate((xu, TEx[1:-2], np.flip(xl)))
+            Pts_y = np.concatenate((yu, TEy[1:-2], np.flip(yl)))
         else:
-            Pts_x = np.append(xu, np.flip(xl))
-            Pts_y = np.append(yu, np.flip(yl)) 
+        #    Pts_x = np.append(xu, np.flip(xl))
+        #    Pts_y = np.append(yu, np.flip(yl)) 
+            Pts_x = np.append(np.flip(xl), xu[1:])
+            Pts_y = np.append(np.flip(yl), yu[1:])
 
         Pts_z = np.zeros(np.size(Pts_y))                                       # Initializing z-vector
 
@@ -492,14 +497,55 @@ class NACA(Foil):
         
         self.pts = self.base_pts
 
-
+#    if include_TE == 0:
+#        Pts_x = np.append(np.flip(xl_c), xu_c[1:])
+#        Pts_y = np.append(np.flip(yl_c), yu_c[1:])
+#    else:
+#        Pts_x = np.concatenate((xu_c, TEx_c[1:-2], np.flip(xl_c)))
+#        Pts_y = np.concatenate((yu_c, TEy_c[1:-2], np.flip(yl_c)))
 
 
  
 
+class Biconvex(Foil):
+    
+ 
+    def __init__(self, name, n_pts=100, **kwargs ):
+        super().__init__(name)
+        self.n_pts = n_pts
+ 
+        tau = 0.05
+ 
 
+        Ox = 0.5
+        #Oy=-0.45
 
+      #  x1 = 0
+     #   x2 = 1
+     #   y1 = 0 
+      #  y2 = 0
 
+        r = (tau/2) + (1/(8*tau)) 
+        Oy = -1*(r-tau)
+        x = Ox-r
+        y = Oy-r
+   
+
+        startAngle = np.arcsin(abs(Oy)/r)
+        endAngle = np.pi - startAngle
+
+     #   alpha = np.arccos(abs(Oy)/r)
+        t = np.linspace(startAngle, endAngle, self.n_pts)
+        x = r*np.cos(t) + Ox
+        y = r*np.sin(t) + Oy
+
+   
+         
+        fig = plt.figure(figsize=(7, 5), facecolor='#212946')
+        ax = fig.add_subplot(111)
+        ax.plot(x,y)
+        ax.axis('equal')
+#Biconvex("Test")
 # =============================================================================
 # 
 # =============================================================================
