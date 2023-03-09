@@ -292,7 +292,7 @@ class App(customtkinter.CTk):
         
         fig = plt.Figure(dpi=100, facecolor=face_color)
         self.ax = fig.add_subplot(111)
-        self.ax.set_facecolor('#212946')
+        self.ax.set_facecolor(face_color)
         
         if widget != None:
             self.figcanvas = FigureCanvasTkAgg(fig, widget)
@@ -300,7 +300,7 @@ class App(customtkinter.CTk):
         self.ax.set_aspect('equal', 'box') 
         self.ax.set_adjustable("datalim")
 
-        self.ax.grid(color='#2A3459', linestyle='solid') 
+        self.ax.grid(color='#4E4E4E', linestyle='solid') 
      
         for spine in self.ax.spines.values():
             spine.set_visible(False)
@@ -343,18 +343,16 @@ class App(customtkinter.CTk):
                 for f in self.draggable_foils:
                     if f.contains(event)[0]:
                         dragging_foil = True      
-                        print("clicked on foil")
+                 #       print("clicked on foil")
                         self.clicked_on_any_foil = True
                     #    print('event contains', f.xy)
                         self.press = f.xy, (event.xdata, event.ydata)
                         self.clicked_foil = f
                         self.foil_xy = self.clicked_foil.get_xy()
-                  #      print(self.press)
-            #            self.x0, self.y0, self.xpress, self.ypress = self.press
-            #
+   
                      
                 if dragging_foil == False:
-                    print("Clicked on axes")
+              #     print("Clicked on axes")
          
                     self.cur_xlim = self.ax.get_xlim()
                     self.cur_ylim = self.ax.get_ylim()
@@ -377,15 +375,8 @@ class App(customtkinter.CTk):
             if event.inaxes != self.ax: 
                 return
             
-  
-  #          print(dx)
             if dragging_foil:   
-              #  foil_xy = self.clicked_foil.get_xy()
-              
-           #   vertices = start_point[4] - np.array([dx, dy])
-               # new_xy = self.foil_xy
-        
-          #      print("event.xdata: "+str(event.xdata)+" , self.xpress: "+ str(self.xpress) )
+          
                 dx = event.xdata - self.xpress
                 dy = event.ydata - self.ypress
                 new_xy = self.foil_xy.copy()
@@ -402,20 +393,46 @@ class App(customtkinter.CTk):
                 self.ax.set_ylim(self.cur_ylim)
         
             self.ax.figure.canvas.draw()     
-            
+       
+  
+        def zoom(event):
+            cur_xlim = self.ax.get_xlim()
+            cur_ylim = self.ax.get_ylim()
+
+            xdata = event.xdata # get event x location
+            ydata = event.ydata # get event y location
+
+            if event.button == 'up':                               # deal with zoom out
+                scale_factor = 1 / base_scale
+            elif event.button == 'down':                              # deal with zoom in
+                scale_factor = base_scale
+            else:                                                   # deal with something that should never happen                
+                scale_factor = 1
+           
+            new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+            new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+            relx = (cur_xlim[1] - xdata)/(cur_xlim[1] - cur_xlim[0])
+            rely = (cur_ylim[1] - ydata)/(cur_ylim[1] - cur_ylim[0])
+
+            self.ax.set_xlim([xdata - new_width * (1-relx), xdata + new_width * (relx)])
+            self.ax.set_ylim([ydata - new_height * (1-rely), ydata + new_height * (rely)])
+            self.ax.figure.canvas.draw()
+
+        base_scale = 1.1
+        
         fig.canvas.mpl_connect('button_press_event', onPress)
         fig.canvas.mpl_connect('motion_notify_event', onMotion)
         fig.canvas.mpl_connect('button_release_event', onRelease)
-                  
-      
-      
+        fig.canvas.mpl_connect('scroll_event', zoom)
+
       
       
     def add_foil(self):
         
         #face_color = '#373737' 
         foil_color = '#08F7FE'
-        foil = NACA("7412", n_pts=10)
+        foil = NACA("7412", n_pts=100)
         
         new_foil = self.ax.fill(foil.pts[:,0], foil.pts[:,1], color=foil_color, alpha=0.25, zorder=1)  
 # =============================================================================
