@@ -29,7 +29,7 @@
  
  
  <br/>
-<i> Repository containing python scripts for generating or fetching various airfoils </i>
+<i> Python package for creating experimental and multi-element airfoils </i>
  
 </div>
 
