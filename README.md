@@ -60,8 +60,15 @@
  
 <p align="justify"> 
    The intended purpose of this package is to serve as a tool to find the best airfoil shape for your engineering application.
+   Use PyFoil to create multi-element airfoils and analyse them in other awesome packages like:
+     - <a href="https://github.com/peterdsharpe/AeroSandbox">AeroSandbox</a>
+     - <a href="https://github.com/peterdsharpe/AeroSandbox">OpenFOAM</a>
+ 
  
    Hope you make some efficient wind (or water!) turbines for some renewable energy, and/or energy-efficient vehicles :airplane: so we can save the planet :earth_africa: 
+   
+
+   
 </p>
 
 <br/> 
