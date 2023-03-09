@@ -77,12 +77,24 @@
 <!-- Features -->
 <h2 id="features"> :dart: FEATURES </h2>
 
-* <b> Generate one or more NACA Airfoils: </b>
+Use the GUI to create complicated airfoil layouts at lightning speed, like adding slats, flaps, or cascading airfoils:
+
+<img src="./doc/gui.png" width="700">
+
+
+Amongst other things the GUI and the code supports:
+* <b> Generating one or more NACA Airfoils: </b>
  Currently the NACA foil families that can be generated are:
   - NACA 4-Digit
   - NACA 4-Digit Modified
   - NACA 5-Digit 
   - NACA 16-Series
+* Fetch historical airfoils
+* Create multi-element airfoils.  
+  
+
+  
+  
   
 Foils are generated according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a>, in which is stated:
 
@@ -93,28 +105,16 @@ Foils are generated according to the definition stated on the  <a href="https://
 <!-- Planned Features -->
 <h2 id="planned-features"> :goal_net: PLANNED FEATURES </h2>
 
-* Fetch historical airfoils
-* Create multi-element airfoils.
+
 * Load a datasheet with a timeseries of wind speeds and angles of attacks, and find the best performing airfoil in terms of lift-to-drag ratio.
 
 <br/> 
 
-<!-- Limitations -->
-<h2 id="limitations"> :warning:  Limitations  :warning: </h2>
  
-<p align="justify"> 
-   WORK IN PROGRESS -> Trying to salvage this project from some old local storage at the moment, but will have the full GUI up at some point, hopefully with some improvements :-)
 
-</p>
+ 
 
-
-
-Currently, a prototype is under development for generating multi-element airfoils, which in its GUI form looks like this:
-
-<img src="./doc/gui.png" width="700">
-
-Which gives a rough direction of where this project is going.
-
+ 
 
 <br/> 
 
