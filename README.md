@@ -170,7 +170,7 @@ foils.plot()
  
 <h2 id="authors"> :goal_net: AUTHORS </h2>
 
-Written by Anders Grøngaard [@AndersGroengaard](https://github.com/AnasGroene)
+Written by [@Agroengaard](https://github.com/Agroengaard)
 
 
 <br/>
