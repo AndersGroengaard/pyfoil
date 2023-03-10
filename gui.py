@@ -17,90 +17,92 @@ import numpy as np
 
 from foils import NACA
 
-
-class ZoomPan:
-    """
-    From Seadoodude's answer at:
-        https://stackoverflow.com/questions/11551049/matplotlib-plot-zooming-with-scroll-wheel
-    """
-    def __init__(self):
-        self.press = None
-        self.cur_xlim = None
-        self.cur_ylim = None
-        self.x0 = None
-        self.y0 = None
-        self.x1 = None
-        self.y1 = None
-        self.xpress = None
-        self.ypress = None
-
-
-    def zoom_factory(self, ax, base_scale = 2.):
-        def zoom(event):
-            cur_xlim = ax.get_xlim()
-            cur_ylim = ax.get_ylim()
-
-            xdata = event.xdata # get event x location
-            ydata = event.ydata # get event y location
-
-            if event.button == 'down':
-                # deal with zoom in
-                scale_factor = 1 / base_scale
-            elif event.button == 'up':
-                # deal with zoom out
-                scale_factor = base_scale
-            else:
-                # deal with something that should never happen
-                scale_factor = 1
-           
-            new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
-            new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
-
-            relx = (cur_xlim[1] - xdata)/(cur_xlim[1] - cur_xlim[0])
-            rely = (cur_ylim[1] - ydata)/(cur_ylim[1] - cur_ylim[0])
-
-            ax.set_xlim([xdata - new_width * (1-relx), xdata + new_width * (relx)])
-            ax.set_ylim([ydata - new_height * (1-rely), ydata + new_height * (rely)])
-            ax.figure.canvas.draw()
-
-        fig = ax.get_figure() # get the figure of interest
-        fig.canvas.mpl_connect('scroll_event', zoom)
-
-        return zoom
-
-    def pan_factory(self, ax):
-        def onPress(event):
-            if event.inaxes != ax: return
-            self.cur_xlim = ax.get_xlim()
-            self.cur_ylim = ax.get_ylim()
-            self.press = self.x0, self.y0, event.xdata, event.ydata
-            self.x0, self.y0, self.xpress, self.ypress = self.press
-
-        def onRelease(event):
-            self.press = None
-            ax.figure.canvas.draw()
-
-        def onMotion(event):
-            if self.press is None: return
-            if event.inaxes != ax: return
-            dx = event.xdata - self.xpress
-            dy = event.ydata - self.ypress
-            self.cur_xlim -= dx
-            self.cur_ylim -= dy
-            ax.set_xlim(self.cur_xlim)
-            ax.set_ylim(self.cur_ylim)
-
-            ax.figure.canvas.draw()
-
-        fig = ax.get_figure() # get the figure of interest
-
-        # attach the call back
-        fig.canvas.mpl_connect('button_press_event',onPress)
-        fig.canvas.mpl_connect('button_release_event',onRelease)
-        fig.canvas.mpl_connect('motion_notify_event',onMotion)
-
-        #return the function
-        return onMotion
+# =============================================================================
+# 
+# class ZoomPan:
+#     """
+#     From Seadoodude's answer at:
+#         https://stackoverflow.com/questions/11551049/matplotlib-plot-zooming-with-scroll-wheel
+#     """
+#     def __init__(self):
+#         self.press = None
+#         self.cur_xlim = None
+#         self.cur_ylim = None
+#         self.x0 = None
+#         self.y0 = None
+#         self.x1 = None
+#         self.y1 = None
+#         self.xpress = None
+#         self.ypress = None
+# 
+# 
+#     def zoom_factory(self, ax, base_scale = 2.):
+#         def zoom(event):
+#             cur_xlim = ax.get_xlim()
+#             cur_ylim = ax.get_ylim()
+# 
+#             xdata = event.xdata # get event x location
+#             ydata = event.ydata # get event y location
+# 
+#             if event.button == 'down':
+#                 # deal with zoom in
+#                 scale_factor = 1 / base_scale
+#             elif event.button == 'up':
+#                 # deal with zoom out
+#                 scale_factor = base_scale
+#             else:
+#                 # deal with something that should never happen
+#                 scale_factor = 1
+#            
+#             new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+#             new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+# 
+#             relx = (cur_xlim[1] - xdata)/(cur_xlim[1] - cur_xlim[0])
+#             rely = (cur_ylim[1] - ydata)/(cur_ylim[1] - cur_ylim[0])
+# 
+#             ax.set_xlim([xdata - new_width * (1-relx), xdata + new_width * (relx)])
+#             ax.set_ylim([ydata - new_height * (1-rely), ydata + new_height * (rely)])
+#             ax.figure.canvas.draw()
+# 
+#         fig = ax.get_figure() # get the figure of interest
+#         fig.canvas.mpl_connect('scroll_event', zoom)
+# 
+#         return zoom
+# 
+#     def pan_factory(self, ax):
+#         def onPress(event):
+#             if event.inaxes != ax: return
+#             self.cur_xlim = ax.get_xlim()
+#             self.cur_ylim = ax.get_ylim()
+#             self.press = self.x0, self.y0, event.xdata, event.ydata
+#             self.x0, self.y0, self.xpress, self.ypress = self.press
+# 
+#         def onRelease(event):
+#             self.press = None
+#             ax.figure.canvas.draw()
+# 
+#         def onMotion(event):
+#             if self.press is None: return
+#             if event.inaxes != ax: return
+#             dx = event.xdata - self.xpress
+#             dy = event.ydata - self.ypress
+#             self.cur_xlim -= dx
+#             self.cur_ylim -= dy
+#             ax.set_xlim(self.cur_xlim)
+#             ax.set_ylim(self.cur_ylim)
+# 
+#             ax.figure.canvas.draw()
+# 
+#         fig = ax.get_figure() # get the figure of interest
+# 
+#         # attach the call back
+#         fig.canvas.mpl_connect('button_press_event',onPress)
+#         fig.canvas.mpl_connect('button_release_event',onRelease)
+#         fig.canvas.mpl_connect('motion_notify_event',onMotion)
+# 
+#         #return the function
+#         return onMotion
+# =============================================================================
 
 
 # =============================================================================
@@ -145,56 +147,58 @@ class ZoomPan:
 # =============================================================================
 
     
-class DraggableFoil:
-    def __init__(self, rect):
-        self.rect = rect
-        self.press = None
-
-    def connect(self):
-        """Connect to all the events we need."""
-        self.cidpress = self.rect.figure.canvas.mpl_connect(
-            'button_press_event', self.on_press)
-        self.cidrelease = self.rect.figure.canvas.mpl_connect(
-            'button_release_event', self.on_release)
-        self.cidmotion = self.rect.figure.canvas.mpl_connect(
-            'motion_notify_event', self.on_motion)
-
-    def on_press(self, event):
-        """Check whether mouse is over us; if so, store some data."""
-        if event.inaxes != self.rect.axes:
-            return
-        contains, attrd = self.rect.contains(event)
-        if not contains:
-            return
-        print('event contains', self.rect.xy)
-        self.press = self.rect.xy, (event.xdata, event.ydata)
-
-    def on_motion(self, event):
-        """Move the rectangle if the mouse is over us."""
-        if self.press is None or event.inaxes != self.rect.axes:
-            return
-        (x0, y0), (xpress, ypress) = self.press
-        dx = event.xdata - xpress
-        dy = event.ydata - ypress
-        # print(f'x0={x0}, xpress={xpress}, event.xdata={event.xdata}, '
-        #       f'dx={dx}, x0+dx={x0+dx}')
-        self.rect.set_x(x0+dx)
-        self.rect.set_y(y0+dy)
-
-        self.rect.figure.canvas.draw()
-
-    def on_release(self, event):
-        """Clear button press information."""
-        self.press = None
-        self.rect.figure.canvas.draw()
-
-    def disconnect(self):
-        """Disconnect all callbacks."""
-        self.rect.figure.canvas.mpl_disconnect(self.cidpress)
-        self.rect.figure.canvas.mpl_disconnect(self.cidrelease)
-        self.rect.figure.canvas.mpl_disconnect(self.cidmotion)
-    
-    
+# =============================================================================
+# class DraggableFoil:
+#     def __init__(self, rect):
+#         self.rect = rect
+#         self.press = None
+# 
+#     def connect(self):
+#         """Connect to all the events we need."""
+#         self.cidpress = self.rect.figure.canvas.mpl_connect(
+#             'button_press_event', self.on_press)
+#         self.cidrelease = self.rect.figure.canvas.mpl_connect(
+#             'button_release_event', self.on_release)
+#         self.cidmotion = self.rect.figure.canvas.mpl_connect(
+#             'motion_notify_event', self.on_motion)
+# 
+#     def on_press(self, event):
+#         """Check whether mouse is over us; if so, store some data."""
+#         if event.inaxes != self.rect.axes:
+#             return
+#         contains, attrd = self.rect.contains(event)
+#         if not contains:
+#             return
+#         print('event contains', self.rect.xy)
+#         self.press = self.rect.xy, (event.xdata, event.ydata)
+# 
+#     def on_motion(self, event):
+#         """Move the rectangle if the mouse is over us."""
+#         if self.press is None or event.inaxes != self.rect.axes:
+#             return
+#         (x0, y0), (xpress, ypress) = self.press
+#         dx = event.xdata - xpress
+#         dy = event.ydata - ypress
+#         # print(f'x0={x0}, xpress={xpress}, event.xdata={event.xdata}, '
+#         #       f'dx={dx}, x0+dx={x0+dx}')
+#         self.rect.set_x(x0+dx)
+#         self.rect.set_y(y0+dy)
+# 
+#         self.rect.figure.canvas.draw()
+# 
+#     def on_release(self, event):
+#         """Clear button press information."""
+#         self.press = None
+#         self.rect.figure.canvas.draw()
+# 
+#     def disconnect(self):
+#         """Disconnect all callbacks."""
+#         self.rect.figure.canvas.mpl_disconnect(self.cidpress)
+#         self.rect.figure.canvas.mpl_disconnect(self.cidrelease)
+#         self.rect.figure.canvas.mpl_disconnect(self.cidmotion)
+#     
+#     
+# =============================================================================
     
     
     
@@ -238,7 +242,7 @@ class App(customtkinter.CTk):
  
         # Create main plotting frame
         self.my_frame = MyFrame(master=self)
-        self.my_frame.grid(row=0, column=1, rowspan=3, padx=20, pady=20, sticky="nsew")
+        self.my_frame.grid(row=0, column=1, rowspan=3, padx=5, pady=0, sticky="nsew")
    
         self.add_foil_plot(self.my_frame)
       #  self.figcanvas, self.ax = add_foil_plot(self.my_frame)
@@ -255,7 +259,7 @@ class App(customtkinter.CTk):
 
         # create scrollable frame
         self.scrollable_frame = customtkinter.CTkScrollableFrame(self)#, label_text="Foils")
-        self.scrollable_frame.grid(row=0, column=3, rowspan=3, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.scrollable_frame.grid(row=0, column=3, rowspan=3, padx=(0, 0), pady=(5, 0), sticky="nsew")
         self.scrollable_frame.grid_columnconfigure(0, weight=1)
         self.scrollable_frame_switches = []
     #    for i in range(100):
@@ -299,9 +303,10 @@ class App(customtkinter.CTk):
  
         self.ax.set_aspect('equal', 'box') 
         self.ax.set_adjustable("datalim")
-
-        self.ax.grid(color='#4E4E4E', linestyle='solid') 
-     
+ 
+        self.ax.grid(which='major', color='#4E4E4E', linestyle='-')
+        self.ax.grid(which='minor', color='#454545', linestyle='--')   
+        self.ax.minorticks_on()
         for spine in self.ax.spines.values():
             spine.set_visible(False)
             
@@ -311,13 +316,26 @@ class App(customtkinter.CTk):
         for tick in self.ax.get_yticklabels():
             tick.set_color('#DFE0E1')    
         
+        
+        self.ax.axhline(color='#08F7FE', lw=0.5)
+        self.ax.axvline(color='#08F7FE', lw=0.5)
+        
+       # self.ax.spines['bottom'].set_position('center') # spine for xaxis 
+        #    - will pass through the center of the y-values (which is 0)
+      #  self.ax.spines['left'].set_position('center')  # spine for yaxis 
+        #    - will pass through the center of the x-values (which is 5)
+# =============================================================================
+#         self.ax.spines['left'].set_position(('data', 0.0))
+#         self.ax.spines['bottom'].set_position(('data', 0.0))
+#         self.ax.spines['right'].set_color('#08F7FE')
+#         self.ax.spines['top'].set_color('#08F7FE')
+# =============================================================================
+
+        
         self.ax.set_xlim(-3, 3)
         
         self.draggable_foils = []     # Initializing the foils list variable
-   #     scale = 1.1
-      #  zp = ZoomPan()
-      #  figZoom = zp.zoom_factory(ax, base_scale = scale)
-      #  figPan = zp.pan_factory(ax)
+ 
         fig.tight_layout()
  
   
@@ -444,6 +462,7 @@ class App(customtkinter.CTk):
 #       #  df.connect()
         for n in new_foil:
             self.draggable_foils.append(n)
+        self.ax.figure.canvas.draw()
 # =============================================================================
 # =============================================================================
 #         import numpy as np
