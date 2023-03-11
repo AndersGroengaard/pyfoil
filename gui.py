@@ -1,33 +1,65 @@
+# /*##########################################################################
+#
+# Copyright (c) 2023  
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ###########################################################################*/
+
+
+
+
+
+
+
+
+
 import tkinter
-import tkinter.messagebox
+#import tkinter.messagebox
 import customtkinter
-import types
+#import types
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from matplotlib.patches import Polygon
+#from matplotlib.patches import Polygon
 #%matplotlib widget
 import matplotlib.pyplot as plt
+from matplotlib import backend_bases
 
 
-from mpl_interactions import ioff, panhandler, zoom_factory
+#from mpl_interactions import ioff, panhandler, zoom_factory
 import numpy as np
-
+import mplcursors
 from foils import NACA
 
 
     
 
+
+
 class MyFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-
-        # add widgets onto the frame...
-   #     self.label = customtkinter.CTkLabel(self)
-  #      self.label.grid(row=0, column=0, padx=20)
+ 
 
 
 class App(customtkinter.CTk):
@@ -109,15 +141,41 @@ class App(customtkinter.CTk):
         ---------------------------------------------------------------------------
         """
         import matplotlib.style as mplstyle
+        
+        
+        #from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+      #  from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
+        
         mplstyle.use('fast')
+        
+        
+        
+        
+        backend_bases.NavigationToolbar2.toolitems = (
+                ('Home', 'Reset original view', 'home', 'home'),
+                ('Back', 'Back to  previous view', 'back', 'back'),
+                ('Forward', 'Forward to next view', 'forward', 'forward'),
+                (None, None, None, None),
+                ('Save', 'Save the figure', 'filesave', 'save_figure'),
+            )
+                    
+                    
+        
+        
+        
         face_color = '#373737' 
-    #    foil_color = '#08F7FE'
-        self.selected_color = '#BCFFFF'  # '#00E0C7'
+ 
+        self.selected_color = '#BCFFFF'  
         self.unselected_color = '#08F7FE'
         
         fig = plt.Figure(dpi=100, facecolor=face_color)
-  
-        
+  #      plt.get_current_fig_manager().toolbar.pan()
+       # fig.canvas.manager.toolbar.pan()
+ 
+    #    self.canvas = FigureCanvas( self , - 1 ,  self .figure)
+    #    self.toolbar = NavigationToolbar( self .canvas)
+    #    self.toolbar.Hide()
+
         self.ax = fig.add_subplot(111)
         self.ax.set_position([0, 0, 1, 1])
         self.ax.set_facecolor(face_color)
@@ -133,42 +191,16 @@ class App(customtkinter.CTk):
         self.ax.minorticks_on()
         for spine in self.ax.spines.values():
             spine.set_visible(False)
-            
-# =============================================================================
-#         self.ax.tick_params(colors='#DFE0E1', direction='out')
-#         for tick in self.ax.get_xticklabels():
-#             tick.set_color('#DFE0E1')
-#         for tick in self.ax.get_yticklabels():
-#             tick.set_color('#92B780')    
-# =============================================================================
+ 
         self.ax.tick_params(axis='both', colors='#9E9E9E')
         
         self.ax.axhline(color='#D2686E', lw=0.5)
         self.ax.axvline(color='#92B780', lw=0.5)
-        
-       # self.ax.spines['bottom'].set_position('center') # spine for xaxis 
-        #    - will pass through the center of the y-values (which is 0)
-      #  self.ax.spines['left'].set_position('center')  # spine for yaxis 
-        #    - will pass through the center of the x-values (which is 5)
-# =============================================================================
+ 
         self.ax.spines['left'].set_position(('data', 0.0))
         self.ax.spines['bottom'].set_position(('data', 0.0))
-#         self.ax.spines['right'].set_color('#08F7FE')
-#         self.ax.spines['top'].set_color('#08F7FE')
-# =============================================================================
 
-        
         self.ax.set_xlim(-3, 3)
-        
-# =============================================================================
-#         plt.gca().set_axis_off()
-#         plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-#           hspace = 0, wspace = 0)
-# =============================================================================
-     
-      #  fig.tight_layout()
-      #  fig.tight_layout()
- 
   
  
         self.press = None
@@ -210,14 +242,25 @@ class App(customtkinter.CTk):
                         self.clicked_on_any_foil = True
                
                         self.press = f.xy, (event.xdata, event.ydata)
+                        
+                        
                         self.clicked_foil = f
                         self.foil_xy = self.clicked_foil.get_xy()
-                   
                         f.set_color(self.selected_color)
- 
                         self._selected_geometry[_id] = f
                         
-                    self.ax.figure.canvas.draw()   
+                        # Blitting
+                        fcanvas = f.figure.canvas
+                        faxes = f.axes
+                        f.set_animated(True)
+                        fcanvas.draw()
+                        self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
+                        faxes.draw_artist(f)
+                        fcanvas.blit(faxes.bbox)
+                        
+                        
+ 
+                    
                     
                 if dragging_foil == False:
                     print("Clicked on axes")
@@ -226,23 +269,42 @@ class App(customtkinter.CTk):
                     self.cur_ylim = self.ax.get_ylim()
                     
                     
-                    for v in self._selected_geometry.values():
-                        v.set_color(self.unselected_color)
+                    for f in self._selected_geometry.values():
+                        f.set_color(self.unselected_color)
+                        
+                                   
+                        fcanvas = f.figure.canvas
+                        faxes = f.axes
+                        f.set_animated(True)
+                        fcanvas.draw()
+                        self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
+                        faxes.draw_artist(f)
+                        fcanvas.blit(faxes.bbox)
+                        f.set_animated(False)
+                        
+                        
                     self._selected_geometry.clear()
                     
+                 #   self.zx.start_pan(x, y, event.button)
                     
-                    self.ax.figure.canvas.draw()   
+                   # self.ax.figure.canvas.draw()   
                     
                 self.press = self.x0, self.y0, event.xdata, event.ydata
                 self.x0, self.y0, self.xpress, self.ypress = self.press
-        
+            
+            
+                if dragging_foil == False:
+                    x, y = event.x, event.y
+                    self.ax.start_pan(x, y, event.button)
+                
         def onRelease(event):
                        
             global dragging_foil          
             dragging_foil = False
             self.press = None
- 
-        
+            for f in self._selected_geometry.values():
+                f.set_animated(False)
+                
         def onMotion(event):
             
             global dragging_foil
@@ -260,42 +322,25 @@ class App(customtkinter.CTk):
  
                 new_xy[:,0] += dx
                 new_xy[:,1] += dy
+                
                 self.clicked_foil.set_xy(new_xy)
+                               
+                fcanvas = self.clicked_foil.figure.canvas
+                faxes = self.clicked_foil.axes
+      
+                fcanvas.restore_region(self.fbackground)                       # restore the background region      
+                faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
+                fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
+  
             else:
                 dx = event.xdata - self.xpress
                 dy = event.ydata - self.ypress
                 self.cur_xlim -= dx
                 self.cur_ylim -= dy
                  
-                
-                
-# =============================================================================
-#                 ax=event.inaxes
-#                 ax._pan_start = types.SimpleNamespace(
-#                         lim=ax.viewLim.frozen(),
-#                         trans=ax.transData.frozen(),
-#                         trans_inverse=ax.transData.inverted().frozen(),
-#                         bbox=ax.bbox.frozen(),
-#                         x=event.x,
-#                         y=event.y)
-#             
-#                 ax.drag_pan(3, event.key, event.x+dx*100, event.y+dy*100)
-#                 #fig=ax.get_figure()
-#                 fig.canvas.draw_idle()
-#                 
-# =============================================================================
-# =============================================================================
-#                 self.ax.drag_pan(3, event.key, event.x+dx, event.y+dy)
-#     
-#               
-#                 fig.canvas.draw_idle()
-# =============================================================================
-
-                self.ax.set_xlim(self.cur_xlim)
-                self.ax.set_ylim(self.cur_ylim)
-        
-            self.ax.figure.canvas.draw()     
-         #   self.ax.figure.canvas.flush_events()
+                self.ax.drag_pan(1, event.key, event.x, event.y)
+                fig.canvas.draw_idle()
+ 
   
         def zoom(event):
             cur_xlim = self.ax.get_xlim()
@@ -304,11 +349,11 @@ class App(customtkinter.CTk):
             xdata = event.xdata # get event x location
             ydata = event.ydata # get event y location
 
-            if event.button == 'up':                               # deal with zoom out
+            if event.button == 'up':                                  # deal with zoom out
                 scale_factor = 1 / base_scale
             elif event.button == 'down':                              # deal with zoom in
                 scale_factor = base_scale
-            else:                                                   # deal with something that should never happen                
+            else:                                                     # deal with something that should never happen                
                 scale_factor = 1
            
             new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
@@ -329,6 +374,8 @@ class App(customtkinter.CTk):
                 self._ctrl_press = True
             if event.key == 'delete':
                 self.delete_selected_foils()
+            if event.key == "p":
+                self.p1.toolbar.pan()
                
         def on_key_release(event):
        
@@ -345,6 +392,8 @@ class App(customtkinter.CTk):
         fig.canvas.mpl_connect('scroll_event', zoom)
         fig.canvas.mpl_connect('key_press_event', on_key_press)
         fig.canvas.mpl_connect('key_release_event', on_key_release)
+    
+      #  mplcursors.cursor(self.ax)
     
     def delete_selected_foils(self):    
         for _id, v in self._selected_geometry.items():
