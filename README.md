@@ -119,6 +119,40 @@ Foils are generated according to the definition stated on the  <a href="https://
 <br/> 
 
  
+ 
+ 
+ 
+ 
+ 
+  
+<h2 id="howtouse">  :man_technologist: HOW TO INSTALL  :woman_technologist: </h2>
+
+
+ 
+ 
+ Install from PyPI:
+ ```
+    pip install pyfoil
+  ```
+or via conda:
+ ```
+    conda install -c conda-forge pyfoil
+ ```
+or from source on GitHub:
+ ```
+    git clone https://github.com/agroengard/pyfoil
+    cd pyfoil
+    pip install .
+ ```
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 <h2 id="howtouse">  :man_technologist: HOW TO USE  :woman_technologist: </h2>
 
 
