@@ -216,8 +216,16 @@ class App(customtkinter.CTk):
         self._selected_geometry = {}
         self._ctrl_press = False
         self.theta_old = None
- 
+        self.scaling_distance_old = None
         self.transform_state = "Normal"
+        
+        def blit_foil():
+            fcanvas = self.clicked_foil.figure.canvas
+            faxes = self.clicked_foil.axes
+            fcanvas.restore_region(self.fbackground)                       # restore the background region      
+            faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
+            fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
+ 
         
         def onPress(event):
  
@@ -270,23 +278,27 @@ class App(customtkinter.CTk):
                     self.cur_ylim = self.ax.get_ylim()
                    
                     for f in self._selected_geometry.values():
-                        f.set_color(self.unselected_color)
-               
-                        fcanvas = f.figure.canvas
-                        faxes = f.axes
-                        f.set_animated(True)
-                        fcanvas.draw()
-                        self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
-                        faxes.draw_artist(f)
-                        fcanvas.blit(faxes.bbox)
-                        f.set_animated(False)
-                        
+                        if f != None:
+                            f.set_color(self.unselected_color)
+                            
+                            
+                            f.set_animated(True)
+                            blit_foil()
+                            f.set_animated(False)
+# =============================================================================
+#                             fcanvas = f.figure.canvas
+#                             faxes = f.axes
+#                             f.set_animated(True)
+#                             fcanvas.draw()
+#                             self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
+#                             faxes.draw_artist(f)
+#                             fcanvas.blit(faxes.bbox)
+#                             f.set_animated(False)
+# =============================================================================
+                            
                         
                     self._selected_geometry.clear()
-                    
-                 #   self.zx.start_pan(x, y, event.button)
-                    
-                   # self.ax.figure.canvas.draw()   
+ 
                     
                 self.press = self.x0, self.y0, event.xdata, event.ydata
                 self.x0, self.y0, self.xpress, self.ypress = self.press
@@ -314,22 +326,31 @@ class App(customtkinter.CTk):
                         d_alpha = theta-self.theta_old
                         new_xy = self.rotate_around_point_highperf(self.rotxy, d_alpha, self.rotOx, self.rotOy)
                         self.clicked_foil.set_xy(new_xy)
-     
-                        fcanvas = self.clicked_foil.figure.canvas
-                        faxes = self.clicked_foil.axes
-                        fcanvas.restore_region(self.fbackground)                       # restore the background region      
-                        faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
-                        fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
+                        blit_foil()
  
                     self.theta_old = theta
           
+            
+                elif self.transform_state == "Scaling":  
+                    scaling_distance = math.sqrt( (abs(event.xdata - self.scaleOx))**2 + (abs(event.ydata - self.scaleOy))**2)
+                        
+                    if self.scaling_distance_old != None:
+                        print("scale")
+                        s = scaling_distance/self.scaling_distance_old
+                        new_xy = self.scalexy * s
+                        self.clicked_foil.set_xy(new_xy) 
+                        blit_foil()
+                        
+               #     self.scaling_distance_old = scaling_distance
+                    
+                   
                 else:        
                     return
                  
             if event.inaxes != self.ax: 
                 return
             
-           # if dragging_foil:   
+ 
             if self.transform_state == "Dragging foil":
                 dx = event.xdata - self.xpress
                 dy = event.ydata - self.ypress
@@ -395,8 +416,9 @@ class App(customtkinter.CTk):
                 self.p1.toolbar.pan()
             if event.key == "f":
                 print("Flipping foil")
+                self.transform_state = "Flip"
                 for _id, v in self._selected_geometry.items():
-                    print(v.get_xy())
+    
                     xy = v.get_xy()
                     Ox = (min(xy[:,0]) + max(xy[:,0]))/2
                     Oy = (min(xy[:,1]) + max(xy[:,1]))/2
@@ -405,10 +427,22 @@ class App(customtkinter.CTk):
                 print("rotating airfoil")
                 self.transform_state = "Rotation"
                 for _id, v in self._selected_geometry.items():
-                 #   print(v.get_xy())
+ 
                     self.rotxy = v.get_xy()
                     self.rotOx = (min(self.rotxy[:,0]) + max(self.rotxy[:,0]))/2
                     self.rotOy = (min(self.rotxy[:,1]) + max(self.rotxy[:,1]))/2
+
+            if event.key == "s":
+                self.transform_state = "Scaling"
+                for _id, v in self._selected_geometry.items():
+ 
+                    self.scalexy = v.get_xy()
+       
+                    self.scaleOx = (min(self.scalexy[:,0]) + max(self.scalexy[:,0]))/2
+                    self.scaleOy = (min(self.scalexy[:,1]) + max(self.scalexy[:,1]))/2
+                    self.scaling_distance_old  = math.sqrt( (abs(event.xdata - self.scaleOx))**2 + (abs(event.ydata - self.scaleOy))**2)
+         
+                print("scaling airfoil")
                     
         def on_key_release(event):
        
@@ -430,7 +464,7 @@ class App(customtkinter.CTk):
     
     def delete_selected_foils(self):    
         for _id, v in self._selected_geometry.items():
-            print("deleting foil with id: "+str(_id))
+       #     print("deleting foil with id: "+str(_id))
             v.remove()
             del self.foil_objs[_id] 
             self.ax.figure.canvas.draw()
