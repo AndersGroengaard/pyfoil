@@ -171,7 +171,7 @@ foils.plot()
 
  
 <h2 id="cite"> :goal_net: How to cite </h2>
-If you've used PyFoil in your research work or find it useful in any way, please consider to cite:
+If you've used PyFoil in your research, you might consider citing it:
 
 ```
 @misc{agroengaard2023,
