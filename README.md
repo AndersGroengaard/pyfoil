@@ -167,6 +167,24 @@ foils.plot()
 
 <br/>
 
+
+
+ 
+<h2 id="cite"> :goal_net: How to cite </h2>
+If you've used PyFoil in your research, you might consider citing it:
+
+```
+@misc{agroengaard2023,
+  author = {Grøngaard, Anders},
+  title = {PyFoil - Airfoil editing with Python},
+  year = {2023},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/agroengaard/pyfoil}},
+  }
+```
+
+
  
 <h2 id="authors"> :goal_net: AUTHORS </h2>
 
