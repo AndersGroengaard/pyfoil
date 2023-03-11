@@ -174,7 +174,7 @@ foils.plot()
 If you've used PyFoil in your research work or find it useful in any way, please consider to cite:
 
 ```
-@misc{Hunter2007william,
+@misc{agroengaard2023,
   author = {Grøngaard, Anders},
   title = {PyFoil - Airfoil editing with Python},
   year = {2023},
