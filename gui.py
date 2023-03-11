@@ -34,9 +34,11 @@ import tkinter
 #import tkinter.messagebox
 import customtkinter
 #import types
+import math
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+#customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+customtkinter.set_default_color_theme("./pyfoil_theme.json")
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -213,13 +215,14 @@ class App(customtkinter.CTk):
         self.clicked_foil = None
         self._selected_geometry = {}
         self._ctrl_press = False
-        dragging_foil = False
+        self.theta_old = None
+ 
+        self.transform_state = "Normal"
         
         def onPress(event):
-            
-            global dragging_foil
-            
-            dragging_foil = False
+ 
+            self.transform_state = "Normal"
+ 
             if event.key == 'ctrl':
                 self._ctrl_press = True
             
@@ -231,7 +234,8 @@ class App(customtkinter.CTk):
                     f = v["foil_plot"]
     
                     if f.contains(event)[0]:
-                        dragging_foil = True      
+     
+                        self.transform_state = "Dragging foil"
                         print("clicked on foil with id: "+str(_id))
                         
                         if self._ctrl_press == False:
@@ -258,21 +262,16 @@ class App(customtkinter.CTk):
                         faxes.draw_artist(f)
                         fcanvas.blit(faxes.bbox)
                         
-                        
  
-                    
-                    
-                if dragging_foil == False:
+                if self.transform_state == "Normal":
                     print("Clicked on axes")
          
                     self.cur_xlim = self.ax.get_xlim()
                     self.cur_ylim = self.ax.get_ylim()
-                    
-                    
+                   
                     for f in self._selected_geometry.values():
                         f.set_color(self.unselected_color)
-                        
-                                   
+               
                         fcanvas = f.figure.canvas
                         faxes = f.axes
                         f.set_animated(True)
@@ -291,31 +290,47 @@ class App(customtkinter.CTk):
                     
                 self.press = self.x0, self.y0, event.xdata, event.ydata
                 self.x0, self.y0, self.xpress, self.ypress = self.press
-            
-            
-                if dragging_foil == False:
+ 
+ 
+                if self.transform_state == "Normal": 
                     x, y = event.x, event.y
                     self.ax.start_pan(x, y, event.button)
                 
         def onRelease(event):
-                       
-            global dragging_foil          
-            dragging_foil = False
+
+            self.transform_state = "Normal"
             self.press = None
             for f in self._selected_geometry.values():
                 f.set_animated(False)
                 
         def onMotion(event):
-            
-            global dragging_foil
-            
+         
             if self.press is None: 
-                return
+                if self.transform_state == "Rotation":    
+ 
+                    theta = np.arctan((event.xdata - self.rotOx) / (event.ydata - self.rotOy))   
+       
+                    if self.theta_old != None:
+                        d_alpha = theta-self.theta_old
+                        new_xy = self.rotate_around_point_highperf(self.rotxy, d_alpha, self.rotOx, self.rotOy)
+                        self.clicked_foil.set_xy(new_xy)
+     
+                        fcanvas = self.clicked_foil.figure.canvas
+                        faxes = self.clicked_foil.axes
+                        fcanvas.restore_region(self.fbackground)                       # restore the background region      
+                        faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
+                        fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
+ 
+                    self.theta_old = theta
+          
+                else:        
+                    return
+                 
             if event.inaxes != self.ax: 
                 return
             
-            if dragging_foil:   
-          
+           # if dragging_foil:   
+            if self.transform_state == "Dragging foil":
                 dx = event.xdata - self.xpress
                 dy = event.ydata - self.ypress
                 new_xy = self.foil_xy.copy()
@@ -331,8 +346,8 @@ class App(customtkinter.CTk):
                 fcanvas.restore_region(self.fbackground)                       # restore the background region      
                 faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
                 fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
-  
-            else:
+         
+            if self.transform_state == "Normal":
                 dx = event.xdata - self.xpress
                 dy = event.ydata - self.ypress
                 self.cur_xlim -= dx
@@ -366,6 +381,8 @@ class App(customtkinter.CTk):
             self.ax.set_ylim([ydata - new_height * (1-rely), ydata + new_height * (rely)])
             self.ax.figure.canvas.draw()
  
+    
+ 
         def on_key_press(event):
          #   print(event.key)
             if event.key == 'shift':
@@ -376,7 +393,23 @@ class App(customtkinter.CTk):
                 self.delete_selected_foils()
             if event.key == "p":
                 self.p1.toolbar.pan()
-               
+            if event.key == "f":
+                print("Flipping foil")
+                for _id, v in self._selected_geometry.items():
+                    print(v.get_xy())
+                    xy = v.get_xy()
+                    Ox = (min(xy[:,0]) + max(xy[:,0]))/2
+                    Oy = (min(xy[:,1]) + max(xy[:,1]))/2
+                    
+            if event.key == "r":
+                print("rotating airfoil")
+                self.transform_state = "Rotation"
+                for _id, v in self._selected_geometry.items():
+                 #   print(v.get_xy())
+                    self.rotxy = v.get_xy()
+                    self.rotOx = (min(self.rotxy[:,0]) + max(self.rotxy[:,0]))/2
+                    self.rotOy = (min(self.rotxy[:,1]) + max(self.rotxy[:,1]))/2
+                    
         def on_key_release(event):
        
            if event.key == 'shift':
@@ -413,7 +446,24 @@ class App(customtkinter.CTk):
  
         self.ax.figure.canvas.draw()
  
- 
+    def rotate_around_point_highperf(self, xy, radians, offset_x, offset_y):
+       """Rotate a point around a given point.
+       
+       I call this the "high performance" version since we're caching some
+       values that are needed >1 time. It's less readable than the previous
+       function but it's faster.
+       """
+     #  x, y = xy
+   
+       adjusted_x = (xy[:,0] - offset_x)
+       adjusted_y = (xy[:,1] - offset_y)
+       cos_rad = math.cos(radians)
+       sin_rad = math.sin(radians)
+       xy[:,0] = offset_x + cos_rad * adjusted_x + sin_rad * adjusted_y
+       xy[:,1] = offset_y + -sin_rad * adjusted_x + cos_rad * adjusted_y
+   
+       return xy
+
         
         
     def open_input_dialog_event(self):

@@ -11,6 +11,14 @@ airfoil = NACA("7411")
 
 foil = airfoil.pts
 
+f
+
+
+
+
+
+
+
 spline_pts = 1000                                                              # Number of points in the fitted function
 tck, u = interpolate.splprep([foil[:-1, 0], foil[:-1, 1]], s=0, per=True)      # Splining the airfoil points
 xi, yi = interpolate.splev(np.linspace(0, 1, spline_pts), tck)                 # Evaluate a B-spline or its derivatives.
