@@ -1,6 +1,7 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
+import types
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -17,192 +18,7 @@ import numpy as np
 
 from foils import NACA
 
-# =============================================================================
-# 
-# class ZoomPan:
-#     """
-#     From Seadoodude's answer at:
-#         https://stackoverflow.com/questions/11551049/matplotlib-plot-zooming-with-scroll-wheel
-#     """
-#     def __init__(self):
-#         self.press = None
-#         self.cur_xlim = None
-#         self.cur_ylim = None
-#         self.x0 = None
-#         self.y0 = None
-#         self.x1 = None
-#         self.y1 = None
-#         self.xpress = None
-#         self.ypress = None
-# 
-# 
-#     def zoom_factory(self, ax, base_scale = 2.):
-#         def zoom(event):
-#             cur_xlim = ax.get_xlim()
-#             cur_ylim = ax.get_ylim()
-# 
-#             xdata = event.xdata # get event x location
-#             ydata = event.ydata # get event y location
-# 
-#             if event.button == 'down':
-#                 # deal with zoom in
-#                 scale_factor = 1 / base_scale
-#             elif event.button == 'up':
-#                 # deal with zoom out
-#                 scale_factor = base_scale
-#             else:
-#                 # deal with something that should never happen
-#                 scale_factor = 1
-#            
-#             new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
-#             new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
-# 
-#             relx = (cur_xlim[1] - xdata)/(cur_xlim[1] - cur_xlim[0])
-#             rely = (cur_ylim[1] - ydata)/(cur_ylim[1] - cur_ylim[0])
-# 
-#             ax.set_xlim([xdata - new_width * (1-relx), xdata + new_width * (relx)])
-#             ax.set_ylim([ydata - new_height * (1-rely), ydata + new_height * (rely)])
-#             ax.figure.canvas.draw()
-# 
-#         fig = ax.get_figure() # get the figure of interest
-#         fig.canvas.mpl_connect('scroll_event', zoom)
-# 
-#         return zoom
-# 
-#     def pan_factory(self, ax):
-#         def onPress(event):
-#             if event.inaxes != ax: return
-#             self.cur_xlim = ax.get_xlim()
-#             self.cur_ylim = ax.get_ylim()
-#             self.press = self.x0, self.y0, event.xdata, event.ydata
-#             self.x0, self.y0, self.xpress, self.ypress = self.press
-# 
-#         def onRelease(event):
-#             self.press = None
-#             ax.figure.canvas.draw()
-# 
-#         def onMotion(event):
-#             if self.press is None: return
-#             if event.inaxes != ax: return
-#             dx = event.xdata - self.xpress
-#             dy = event.ydata - self.ypress
-#             self.cur_xlim -= dx
-#             self.cur_ylim -= dy
-#             ax.set_xlim(self.cur_xlim)
-#             ax.set_ylim(self.cur_ylim)
-# 
-#             ax.figure.canvas.draw()
-# 
-#         fig = ax.get_figure() # get the figure of interest
-# 
-#         # attach the call back
-#         fig.canvas.mpl_connect('button_press_event',onPress)
-#         fig.canvas.mpl_connect('button_release_event',onRelease)
-#         fig.canvas.mpl_connect('motion_notify_event',onMotion)
-# 
-#         #return the function
-#         return onMotion
-# =============================================================================
 
-
-# =============================================================================
-# 
-# =============================================================================
-
-
-
-
-  
- 
-# =============================================================================
-#     fig = plt.figure(figsize=(7, 5), facecolor='#212946')
-#     ax = fig.add_subplot(111)
-#     ax.set_facecolor('#212946')
-#     
-#     if self.x is not None and self.yc is not None:
-#         plot_glowing_line(ax, self.x, self.yc, 
-#                           '#00ff9f',
-#                         #  '#ea00d9', 
-#                           linestyle='dashed', label="camber line")
-# 
-#     ax.fill(self.pts[:,0], self.pts[:,1], color=foil_color, alpha=0.25, zorder=1)      
-#     plot_glowing_line(ax, self.pts[:,0], self.pts[:,1], foil_color, label="Foil Surface")
-#    
-#     ax.axis('equal')        
-#     ax.set_title(self.name, color='#08F7FE')
-#  
-#     plt.grid(color='#2A3459', linestyle='solid')
-#  
-#     for spine in ax.spines.values():
-#         spine.set_visible(False)
-#  
-#     ax.tick_params(colors='#DFE0E1', direction='out')
-#     for tick in ax.get_xticklabels():
-#         tick.set_color('#DFE0E1')
-#     for tick in ax.get_yticklabels():
-#         tick.set_color('#DFE0E1')
-#         
-#     ax.set_xlabel('X-axis',fontsize = 10, color='#08F7FE')                
-#     ax.set_ylabel('Y-axis', fontsize = 10, color='#08F7FE')            
-# =============================================================================
-
-    
-# =============================================================================
-# class DraggableFoil:
-#     def __init__(self, rect):
-#         self.rect = rect
-#         self.press = None
-# 
-#     def connect(self):
-#         """Connect to all the events we need."""
-#         self.cidpress = self.rect.figure.canvas.mpl_connect(
-#             'button_press_event', self.on_press)
-#         self.cidrelease = self.rect.figure.canvas.mpl_connect(
-#             'button_release_event', self.on_release)
-#         self.cidmotion = self.rect.figure.canvas.mpl_connect(
-#             'motion_notify_event', self.on_motion)
-# 
-#     def on_press(self, event):
-#         """Check whether mouse is over us; if so, store some data."""
-#         if event.inaxes != self.rect.axes:
-#             return
-#         contains, attrd = self.rect.contains(event)
-#         if not contains:
-#             return
-#         print('event contains', self.rect.xy)
-#         self.press = self.rect.xy, (event.xdata, event.ydata)
-# 
-#     def on_motion(self, event):
-#         """Move the rectangle if the mouse is over us."""
-#         if self.press is None or event.inaxes != self.rect.axes:
-#             return
-#         (x0, y0), (xpress, ypress) = self.press
-#         dx = event.xdata - xpress
-#         dy = event.ydata - ypress
-#         # print(f'x0={x0}, xpress={xpress}, event.xdata={event.xdata}, '
-#         #       f'dx={dx}, x0+dx={x0+dx}')
-#         self.rect.set_x(x0+dx)
-#         self.rect.set_y(y0+dy)
-# 
-#         self.rect.figure.canvas.draw()
-# 
-#     def on_release(self, event):
-#         """Clear button press information."""
-#         self.press = None
-#         self.rect.figure.canvas.draw()
-# 
-#     def disconnect(self):
-#         """Disconnect all callbacks."""
-#         self.rect.figure.canvas.mpl_disconnect(self.cidpress)
-#         self.rect.figure.canvas.mpl_disconnect(self.cidrelease)
-#         self.rect.figure.canvas.mpl_disconnect(self.cidmotion)
-#     
-#     
-# =============================================================================
-    
-    
-    
-    
     
 
 class MyFrame(customtkinter.CTkFrame):
@@ -218,6 +34,8 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
+        self.draggable_foils = []     # Initializing the foils list variable
+        self.foil_objs = {}     # Initializing the foils obj dict variable
         # configure window
         self.title("PyFoil - Multi Element Airfoil Maker")
         self.geometry(f"{1100}x{580}")
@@ -290,14 +108,20 @@ class App(customtkinter.CTk):
         | that widget. If nothing is supplied it will plot as normally.           |
         ---------------------------------------------------------------------------
         """
-
+        import matplotlib.style as mplstyle
+        mplstyle.use('fast')
         face_color = '#373737' 
-        foil_color = '#08F7FE'
+    #    foil_color = '#08F7FE'
+        self.selected_color = '#BCFFFF'  # '#00E0C7'
+        self.unselected_color = '#08F7FE'
         
         fig = plt.Figure(dpi=100, facecolor=face_color)
-        self.ax = fig.add_subplot(111)
-        self.ax.set_facecolor(face_color)
+  
         
+        self.ax = fig.add_subplot(111)
+        self.ax.set_position([0, 0, 1, 1])
+        self.ax.set_facecolor(face_color)
+        self.ax.margins(x=0)
         if widget != None:
             self.figcanvas = FigureCanvasTkAgg(fig, widget)
  
@@ -310,23 +134,25 @@ class App(customtkinter.CTk):
         for spine in self.ax.spines.values():
             spine.set_visible(False)
             
-        self.ax.tick_params(colors='#DFE0E1', direction='out')
-        for tick in self.ax.get_xticklabels():
-            tick.set_color('#DFE0E1')
-        for tick in self.ax.get_yticklabels():
-            tick.set_color('#DFE0E1')    
+# =============================================================================
+#         self.ax.tick_params(colors='#DFE0E1', direction='out')
+#         for tick in self.ax.get_xticklabels():
+#             tick.set_color('#DFE0E1')
+#         for tick in self.ax.get_yticklabels():
+#             tick.set_color('#92B780')    
+# =============================================================================
+        self.ax.tick_params(axis='both', colors='#9E9E9E')
         
-        
-        self.ax.axhline(color='#08F7FE', lw=0.5)
-        self.ax.axvline(color='#08F7FE', lw=0.5)
+        self.ax.axhline(color='#D2686E', lw=0.5)
+        self.ax.axvline(color='#92B780', lw=0.5)
         
        # self.ax.spines['bottom'].set_position('center') # spine for xaxis 
         #    - will pass through the center of the y-values (which is 0)
       #  self.ax.spines['left'].set_position('center')  # spine for yaxis 
         #    - will pass through the center of the x-values (which is 5)
 # =============================================================================
-#         self.ax.spines['left'].set_position(('data', 0.0))
-#         self.ax.spines['bottom'].set_position(('data', 0.0))
+        self.ax.spines['left'].set_position(('data', 0.0))
+        self.ax.spines['bottom'].set_position(('data', 0.0))
 #         self.ax.spines['right'].set_color('#08F7FE')
 #         self.ax.spines['top'].set_color('#08F7FE')
 # =============================================================================
@@ -334,9 +160,14 @@ class App(customtkinter.CTk):
         
         self.ax.set_xlim(-3, 3)
         
-        self.draggable_foils = []     # Initializing the foils list variable
- 
-        fig.tight_layout()
+# =============================================================================
+#         plt.gca().set_axis_off()
+#         plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
+#           hspace = 0, wspace = 0)
+# =============================================================================
+     
+      #  fig.tight_layout()
+      #  fig.tight_layout()
  
   
  
@@ -348,6 +179,8 @@ class App(customtkinter.CTk):
         self.xpress = None
         self.ypress = None
         self.clicked_foil = None
+        self._selected_geometry = {}
+        self._ctrl_press = False
         dragging_foil = False
         
         def onPress(event):
@@ -355,25 +188,51 @@ class App(customtkinter.CTk):
             global dragging_foil
             
             dragging_foil = False
+            if event.key == 'ctrl':
+                self._ctrl_press = True
+            
             
             if event.inaxes == self.ax:
                 self.clicked_on_any_foil=False
-                for f in self.draggable_foils:
+
+                for _id, v in self.foil_objs.items():
+                    f = v["foil_plot"]
+    
                     if f.contains(event)[0]:
                         dragging_foil = True      
-                 #       print("clicked on foil")
+                        print("clicked on foil with id: "+str(_id))
+                        
+                        if self._ctrl_press == False:
+                            for v in self._selected_geometry.values():
+                                v.set_color(self.unselected_color)
+                            self._selected_geometry.clear()
+                        
                         self.clicked_on_any_foil = True
-                    #    print('event contains', f.xy)
+               
                         self.press = f.xy, (event.xdata, event.ydata)
                         self.clicked_foil = f
                         self.foil_xy = self.clicked_foil.get_xy()
-   
-                     
+                   
+                        f.set_color(self.selected_color)
+ 
+                        self._selected_geometry[_id] = f
+                        
+                    self.ax.figure.canvas.draw()   
+                    
                 if dragging_foil == False:
-              #     print("Clicked on axes")
+                    print("Clicked on axes")
          
                     self.cur_xlim = self.ax.get_xlim()
                     self.cur_ylim = self.ax.get_ylim()
+                    
+                    
+                    for v in self._selected_geometry.values():
+                        v.set_color(self.unselected_color)
+                    self._selected_geometry.clear()
+                    
+                    
+                    self.ax.figure.canvas.draw()   
+                    
                 self.press = self.x0, self.y0, event.xdata, event.ydata
                 self.x0, self.y0, self.xpress, self.ypress = self.press
         
@@ -407,11 +266,36 @@ class App(customtkinter.CTk):
                 dy = event.ydata - self.ypress
                 self.cur_xlim -= dx
                 self.cur_ylim -= dy
+                 
+                
+                
+# =============================================================================
+#                 ax=event.inaxes
+#                 ax._pan_start = types.SimpleNamespace(
+#                         lim=ax.viewLim.frozen(),
+#                         trans=ax.transData.frozen(),
+#                         trans_inverse=ax.transData.inverted().frozen(),
+#                         bbox=ax.bbox.frozen(),
+#                         x=event.x,
+#                         y=event.y)
+#             
+#                 ax.drag_pan(3, event.key, event.x+dx*100, event.y+dy*100)
+#                 #fig=ax.get_figure()
+#                 fig.canvas.draw_idle()
+#                 
+# =============================================================================
+# =============================================================================
+#                 self.ax.drag_pan(3, event.key, event.x+dx, event.y+dy)
+#     
+#               
+#                 fig.canvas.draw_idle()
+# =============================================================================
+
                 self.ax.set_xlim(self.cur_xlim)
                 self.ax.set_ylim(self.cur_ylim)
         
             self.ax.figure.canvas.draw()     
-       
+         #   self.ax.figure.canvas.flush_events()
   
         def zoom(event):
             cur_xlim = self.ax.get_xlim()
@@ -436,52 +320,57 @@ class App(customtkinter.CTk):
             self.ax.set_xlim([xdata - new_width * (1-relx), xdata + new_width * (relx)])
             self.ax.set_ylim([ydata - new_height * (1-rely), ydata + new_height * (rely)])
             self.ax.figure.canvas.draw()
-
+ 
+        def on_key_press(event):
+         #   print(event.key)
+            if event.key == 'shift':
+               self._shift_press = True
+            if event.key == 'control':
+                self._ctrl_press = True
+            if event.key == 'delete':
+                self.delete_selected_foils()
+               
+        def on_key_release(event):
+       
+           if event.key == 'shift':
+               self._shift_press = False
+           if event.key == 'control':
+               self._ctrl_press = False
+               
         base_scale = 1.1
         
         fig.canvas.mpl_connect('button_press_event', onPress)
         fig.canvas.mpl_connect('motion_notify_event', onMotion)
         fig.canvas.mpl_connect('button_release_event', onRelease)
         fig.canvas.mpl_connect('scroll_event', zoom)
-
-      
-      
+        fig.canvas.mpl_connect('key_press_event', on_key_press)
+        fig.canvas.mpl_connect('key_release_event', on_key_release)
+    
+    def delete_selected_foils(self):    
+        for _id, v in self._selected_geometry.items():
+            print("deleting foil with id: "+str(_id))
+            v.remove()
+            del self.foil_objs[_id] 
+            self.ax.figure.canvas.draw()
+            
+            
     def add_foil(self):
         
-        #face_color = '#373737' 
-        foil_color = '#08F7FE'
         foil = NACA("7412", n_pts=100)
+
+        foil_plot = self.ax.fill(foil.pts[:,0], foil.pts[:,1], color=self.unselected_color, alpha=0.25, zorder=3)  
         
-        new_foil = self.ax.fill(foil.pts[:,0], foil.pts[:,1], color=foil_color, alpha=0.25, zorder=1)  
-# =============================================================================
-#         
-#         new_foil = plt.Polygon(foil.pts[:,:2], closed=True, fill=True, linewidth=3, color='#F97306')
-#         self.ax.add_patch(new_foil)
-#     
-#       #  df = DraggableFoil(new_foil)
-#       #  df.connect()
-        for n in new_foil:
-            self.draggable_foils.append(n)
+        self.foil_objs[foil.id] = {"foil":foil , "foil_plot": foil_plot[0]}
+ 
         self.ax.figure.canvas.draw()
-# =============================================================================
-# =============================================================================
-#         import numpy as np
-#         rects = self.ax.bar(range(10), 20*np.random.rand(10))
-#   
-#         for rect in rects:
-#             dr = DraggableFoil(rect)
-#             dr.connect()
-#             self.draggable_foils.append(dr)
-# 
-# =============================================================================
+ 
+ 
         
         
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
         print("CTkInputDialog:", dialog.get_input())
 
-    def change_appearance_mode_event(self, new_appearance_mode: str):
-        customtkinter.set_appearance_mode(new_appearance_mode)
 
     def change_scaling_event(self, new_scaling: str):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
@@ -492,5 +381,33 @@ class App(customtkinter.CTk):
 
 
 if __name__ == "__main__":
+    
+    
+    import tracemalloc
+ 
+ 
+
+    # starting the monitoring
+    tracemalloc.start()
+     
+    
+    
+    
     app = App()
     app.mainloop()
+    
+    
+    
+    
+
+ 
+     
+    # displaying the memory
+    print(tracemalloc.get_traced_memory()) #
+     # 10-02-2023 21:36  -> (2767038, 2852662)
+    # stopping the library
+    tracemalloc.stop()
+        
+    
+    
+    

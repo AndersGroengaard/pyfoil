@@ -17,6 +17,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 import matplotlib
+import itertools
 
 
 
@@ -35,6 +36,7 @@ def plot_glowing_line(ax, x, y, color, linestyle='solid', linewidth=1, label="")
   
 
 
+ 
 
 class Foil:
     """
@@ -44,9 +46,11 @@ class Foil:
     """
     
     descr = "Foil Object"
+    newid = itertools.count() 
     
     def __init__(self, name):
         self.name = name
+        self.id = next(self.newid)
         self.c = 1
         self.x = None
         self.yt = None
