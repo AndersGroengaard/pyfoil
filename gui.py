@@ -40,17 +40,23 @@ customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark
 #customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 customtkinter.set_default_color_theme("./pyfoil_theme.json")
 
+
+
+
+import matplotlib as mpl
+#mpl.use('Qt5Agg')
+#mpl.use('TkAgg')
+#mpl.use('Agg')
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-#from matplotlib.patches import Polygon
-#%matplotlib widget
+
 import matplotlib.pyplot as plt
 from matplotlib import backend_bases
 
-
 #from mpl_interactions import ioff, panhandler, zoom_factory
 import numpy as np
-import mplcursors
+#import mplcursors
 from foils import NACA
 
 
@@ -107,8 +113,7 @@ class App(customtkinter.CTk):
         self.main_button_1 = customtkinter.CTkButton(master=self)#, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
         self.main_button_1.configure(text="Export")
-
-
+ 
         # create scrollable frame
         self.scrollable_frame = customtkinter.CTkScrollableFrame(self)#, label_text="Foils")
         self.scrollable_frame.grid(row=0, column=3, rowspan=3, padx=(0, 0), pady=(5, 0), sticky="nsew")
@@ -167,17 +172,11 @@ class App(customtkinter.CTk):
         
         face_color = '#373737' 
  
-        self.selected_color = '#BCFFFF'  
+        self.selected_color = '#96FEF9'  
         self.unselected_color = '#08F7FE'
         
         fig = plt.Figure(dpi=100, facecolor=face_color)
-  #      plt.get_current_fig_manager().toolbar.pan()
-       # fig.canvas.manager.toolbar.pan()
  
-    #    self.canvas = FigureCanvas( self , - 1 ,  self .figure)
-    #    self.toolbar = NavigationToolbar( self .canvas)
-    #    self.toolbar.Hide()
-
         self.ax = fig.add_subplot(111)
         self.ax.set_position([0, 0, 1, 1])
         self.ax.set_facecolor(face_color)
@@ -222,9 +221,9 @@ class App(customtkinter.CTk):
         def blit_foil():
             fcanvas = self.clicked_foil.figure.canvas
             faxes = self.clicked_foil.axes
-            fcanvas.restore_region(self.fbackground)                       # restore the background region      
-            faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
-            fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
+            fcanvas.restore_region(self.fbackground)                           # restore the background region      
+            faxes.draw_artist(self.clicked_foil)                               # redraw just the current rectangle
+            fcanvas.blit(faxes.bbox)                                           # blit just the redrawn area
  
         
         def onPress(event):
@@ -262,6 +261,7 @@ class App(customtkinter.CTk):
                         self._selected_geometry[_id] = f
                         
                         # Blitting
+   
                         fcanvas = f.figure.canvas
                         faxes = f.axes
                         f.set_animated(True)
@@ -280,26 +280,13 @@ class App(customtkinter.CTk):
                     for f in self._selected_geometry.values():
                         if f != None:
                             f.set_color(self.unselected_color)
-                            
-                            
+                          
                             f.set_animated(True)
                             blit_foil()
                             f.set_animated(False)
-# =============================================================================
-#                             fcanvas = f.figure.canvas
-#                             faxes = f.axes
-#                             f.set_animated(True)
-#                             fcanvas.draw()
-#                             self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
-#                             faxes.draw_artist(f)
-#                             fcanvas.blit(faxes.bbox)
-#                             f.set_animated(False)
-# =============================================================================
-                            
-                        
+    
                     self._selected_geometry.clear()
- 
-                    
+           
                 self.press = self.x0, self.y0, event.xdata, event.ydata
                 self.x0, self.y0, self.xpress, self.ypress = self.press
  
@@ -316,14 +303,17 @@ class App(customtkinter.CTk):
                 f.set_animated(False)
                 
         def onMotion(event):
-         
+           # print("Moving")
             if self.press is None: 
                 if self.transform_state == "Rotation":    
- 
-                    theta = np.arctan((event.xdata - self.rotOx) / (event.ydata - self.rotOy))   
-       
+                   # delta_x = event.xdata - self.rotOx
+                  #  delta_y = event.ydata - self.rotOy
+                    
+                   # theta = np.arctan((event.xdata - self.rotOx) / (event.ydata - self.rotOy))   
+                    theta = math.atan2((event.ydata - self.rotOy) , (event.xdata - self.rotOx))   
                     if self.theta_old != None:
-                        d_alpha = theta-self.theta_old
+                #        d_alpha = theta-self.theta_old
+                        d_alpha = self.theta_old - theta
                         new_xy = self.rotate_around_point_highperf(self.rotxy, d_alpha, self.rotOx, self.rotOy)
                         self.clicked_foil.set_xy(new_xy)
                         blit_foil()
@@ -335,9 +325,17 @@ class App(customtkinter.CTk):
                     scaling_distance = math.sqrt( (abs(event.xdata - self.scaleOx))**2 + (abs(event.ydata - self.scaleOy))**2)
                         
                     if self.scaling_distance_old != None:
-                        print("scale")
+                    #    print("scale")
                         s = scaling_distance/self.scaling_distance_old
-                        new_xy = self.scalexy * s
+                        new_xy = self.scalexy.copy()
+                        new_xy[:,0] = new_xy[:,0] - self.scaleOx
+                        new_xy[:,1] = new_xy[:,1] - self.scaleOy
+                        new_xy = new_xy * s
+                        new_xy[:,0] = new_xy[:,0] + self.scaleOx
+                        new_xy[:,1] = new_xy[:,1] + self.scaleOy
+                        
+                #        new_xy = s*(self.scalexy-cp)+cp
+                        
                         self.clicked_foil.set_xy(new_xy) 
                         blit_foil()
                         
@@ -368,7 +366,7 @@ class App(customtkinter.CTk):
                 faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
                 fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
          
-            if self.transform_state == "Normal":
+            elif self.transform_state == "Normal":
                 dx = event.xdata - self.xpress
                 dy = event.ydata - self.ypress
                 self.cur_xlim -= dx
