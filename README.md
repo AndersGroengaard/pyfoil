@@ -96,7 +96,7 @@ Amongst other things the GUI and the code supports:
   
   
   
-Foils are generated according to the definition stated on the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a>, in which is stated:
+Foils are generated according to the definition from the  <a href="https://m-selig.ae.illinois.edu/ads/coord_database.html" > UIUC Airfoil Coordinates Database </a>, in which is stated:
 
 > "The coordinates order starts from upper surface trailing edge, then wraps around the leading edge to the lower surface trailing edge"
 
@@ -205,7 +205,8 @@ foils.plot()
 
  
 <h2 id="cite"> :goal_net: How to cite </h2>
-If you've used PyFoil in your research, you might consider citing it:
+
+If you have used PyFoil in your research, and you want to cite it, you could for example use the following BibLatex entry:
 
 ```
 @misc{agroengaard2023,
