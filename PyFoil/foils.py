@@ -26,6 +26,7 @@ import itertools
 def plot_glowing_line(ax, x, y, color, linestyle='solid', linewidth=1, label=""):
     """
     ---------------------------------------------------------------------------
+    |                                                                         |
     ---------------------------------------------------------------------------     
     """
     ax.plot(x, y, color=color, linestyle=linestyle, 
@@ -133,7 +134,7 @@ class DataFoil(Foil):
     
     descr = "DataFoil Object"
     
-    def __init__(self, name):
+    def __init__(self, name, n_pts = None):
         super().__init__(name)
         """
         -----------------------------------------------------------------------
@@ -145,14 +146,18 @@ class DataFoil(Foil):
         |                                                                     |
         |_____________________________________________________________________|
         """
-        foil_path = r'./foil_lib/'+self.name+'.dat'
+        foil_path = r'../foil_lib/'+self.name+'.dat'
+        
+        #n_desired_pts = kwargs.get("n_pts", None)
         
         if os.path.exists(foil_path):
             
-            self.base_pts = np.genfromtxt(r'./foil_lib/'+self.name+'.dat', 
+            self.base_pts = np.genfromtxt(foil_path, 
                                     skip_header=0, dtype=float, 
                                     invalid_raise=False, 
                                     usecols = (0, 1))
+            
+            self.base_pts = self.base_pts[~np.isnan(self.base_pts).any(axis=1)] # Removing NaN rows
             
             if self.base_pts.shape[1] == 2:                                    # If we only have x and y coordinates, we need to add a z vector as well
                 Pts_z = np.zeros(np.size(self.base_pts[:,0]))                  # Initializing z-vector
@@ -162,11 +167,35 @@ class DataFoil(Foil):
                                            axis=1)
             self.pts = self.base_pts
     
+            if n_pts != None:                                                  # If the user has specified points...
+                self.interp(n_pts)                                             # ... then we call the interpolate method
+    
             self.n_pts = len(self.pts) 
-            
+                
         
         else:
             raise Exception(f'An airfoil by the name of {self.name} was not found in the database' )
+        
+        
+    def interp(self, n_new_pts):
+        """
+        -----------------------------------------------------------------------
+        |  Method for interpolating the points in the existing airfoil so     |
+        |  that the user can instantiate an airfoil from the desired number   |
+        |  of points.                                                         |
+        -----------------------------------------------------------------------
+        |  INPUT:                                                             |
+        |      n_new_pts (int) : N number of new points that the airfoil      |
+        |                        should consist of                            |
+        |_____________________________________________________________________|
+        """
+        tck, u = interpolate.splprep([self.base_pts[:-1, 0],
+                                      self.base_pts[:-1, 1]], 
+                                      s=0, per=True)                           # Splining the airfoil points
+        xi, yi = interpolate.splev(np.linspace(0, 1, n_new_pts), tck)          # Evaluate a B-spline or its derivatives.
+        self.pts = np.array([xi, yi]).T                                        # Assigning interpolated points to the pts array
+
+        
         
     def __str__(self) -> str:
         return f'An {self.name} airfoil imported from a database consisting of {self.n_pts} points'             
@@ -612,12 +641,13 @@ class FoilGroup:
 class DataFoils:
     def __init__(self, **kwargs):
         super().__init__()
-        self.foil_lib_path = "./foil_lib/"
+        self.foil_lib_path = "../foil_lib/"
         self.libnrs = []
         
     def list_all(self):
         self.libnrs = os.listdir(self.foil_lib_path)
-          
+        return self.libnrs
+    
     def import_library_foils(self, libnrs : list):
         """
         -----------------------------------------------------------------------
@@ -768,12 +798,19 @@ class NACAs(FoilGroup):
 # 
 # =============================================================================
 
-
- 
- 
-
-
-    
+# =============================================================================
+# dfoils = DataFoils()
+# 
+# test = dfoils.list_all()
+# =============================================================================
+# =============================================================================
+# 
+# t = fpts[~np.isnan(fpts)]
+# fpts[np.isnan(fpts).any(axis=0)]
+# 
+# 
+# fpts[~np.isnan(fpts).any(axis=1)]
+# =============================================================================
 #airfoil.plot()
 #yc = airfoil.yc  
 # =============================================================================

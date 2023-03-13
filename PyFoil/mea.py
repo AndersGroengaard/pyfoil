@@ -10,8 +10,7 @@ airfoil = NACA("7411")
 #airfoil2.save()
 
 foil = airfoil.pts
-
-f
+ 
 
 
 

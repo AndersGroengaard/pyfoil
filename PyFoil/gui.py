@@ -49,7 +49,10 @@ import matplotlib as mpl
 #mpl.use('Agg')
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backend_bases import MouseButton
 
+from matplotlib.backends.backend_tkagg import (
+    FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 import matplotlib.pyplot as plt
 from matplotlib import backend_bases
@@ -230,71 +233,83 @@ class App(customtkinter.CTk):
  
             self.transform_state = "Normal"
  
-            if event.key == 'ctrl':
-                self._ctrl_press = True
-            
-            
-            if event.inaxes == self.ax:
-                self.clicked_on_any_foil=False
-
-                for _id, v in self.foil_objs.items():
-                    f = v["foil_plot"]
-    
-                    if f.contains(event)[0]:
+            if event.button is MouseButton.LEFT:    
      
-                        self.transform_state = "Dragging foil"
-                        print("clicked on foil with id: "+str(_id))
-                        
-                        if self._ctrl_press == False:
-                            for v in self._selected_geometry.values():
-                                v.set_color(self.unselected_color)
-                            self._selected_geometry.clear()
-                        
-                        self.clicked_on_any_foil = True
-               
-                        self.press = f.xy, (event.xdata, event.ydata)
-                        
-                        
-                        self.clicked_foil = f
-                        self.foil_xy = self.clicked_foil.get_xy()
-                        f.set_color(self.selected_color)
-                        self._selected_geometry[_id] = f
-                        
-                        # Blitting
-   
-                        fcanvas = f.figure.canvas
-                        faxes = f.axes
-                        f.set_animated(True)
-                        fcanvas.draw()
-                        self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
-                        faxes.draw_artist(f)
-                        fcanvas.blit(faxes.bbox)
-                        
- 
-                if self.transform_state == "Normal":
-                    print("Clicked on axes")
-         
-                    self.cur_xlim = self.ax.get_xlim()
-                    self.cur_ylim = self.ax.get_ylim()
-                   
-                    for f in self._selected_geometry.values():
-                        if f != None:
-                            f.set_color(self.unselected_color)
-                          
-                            f.set_animated(True)
-                            blit_foil()
-                            f.set_animated(False)
-    
-                    self._selected_geometry.clear()
-           
-                self.press = self.x0, self.y0, event.xdata, event.ydata
-                self.x0, self.y0, self.xpress, self.ypress = self.press
- 
- 
-                if self.transform_state == "Normal": 
-                    x, y = event.x, event.y
-                    self.ax.start_pan(x, y, event.button)
+                if event.key == 'ctrl':
+                    self._ctrl_press = True
                 
+                
+                if event.inaxes == self.ax:
+                    self.clicked_on_any_foil=False
+    
+                    for _id, v in self.foil_objs.items():
+                        f = v["foil_plot"]
+        
+                        if f.contains(event)[0]:
+         
+                            self.transform_state = "Dragging foil"
+                            print("clicked on foil with id: "+str(_id))
+                            
+                            if self._ctrl_press == False:
+                                for v in self._selected_geometry.values():
+                                    v.set_color(self.unselected_color)
+                                self._selected_geometry.clear()
+                            
+                            self.clicked_on_any_foil = True
+                   
+                            self.press = f.xy, (event.xdata, event.ydata)
+                            
+                            
+                            self.clicked_foil = f
+                            self.foil_xy = self.clicked_foil.get_xy()
+                            f.set_color(self.selected_color)
+                            f.set_edgecolor('w')
+                            f.set
+                            self._selected_geometry[_id] = f
+                            
+                            # Blitting
+       
+                            fcanvas = f.figure.canvas
+                            faxes = f.axes
+                            f.set_animated(True)
+                            fcanvas.draw()
+                            self.fbackground = fcanvas.copy_from_bbox(f.axes.bbox)
+                            faxes.draw_artist(f)
+                            fcanvas.blit(faxes.bbox)
+                            
+     
+                    if self.transform_state == "Normal":
+                        print("Clicked on axes")
+             
+                        self.cur_xlim = self.ax.get_xlim()
+                        self.cur_ylim = self.ax.get_ylim()
+                       
+                        for f in self._selected_geometry.values():
+                            if f != None:
+                                f.set_color(self.unselected_color)
+                              
+                                f.set_animated(True)
+                                blit_foil()
+                                f.set_animated(False)
+        
+                        self._selected_geometry.clear()
+               
+                    self.press = self.x0, self.y0, event.xdata, event.ydata
+                    self.x0, self.y0, self.xpress, self.ypress = self.press
+     
+          #  if event.button is MouseButton.RIGHT:  
+            #    if self.transform_state == "Normal": 
+                #    x, y = event.x, event.y
+                #    self.ax.start_pan(x, y, event.button)
+                #    self.ax.get_current_fig_manager().toolbar.pan()
+                 #   toolbar = NavigationToolbar2Tk(self.figcanvas, self.figcanvas)
+                    
+                    
+          #          toolbar = NavigationToolbar2Tk(self.figcanvas, self, pack_toolbar=False)
+            #        toolbar.update()
+            #        toolbar.pan()
+                    
+                    
         def onRelease(event):
 
             self.transform_state = "Normal"
@@ -361,15 +376,17 @@ class App(customtkinter.CTk):
                 faxes.draw_artist(self.clicked_foil)                           # redraw just the current rectangle
                 fcanvas.blit(faxes.bbox)                                       # blit just the redrawn area
          
-            elif self.transform_state == "Normal":
-                dx = event.xdata - self.xpress
-                dy = event.ydata - self.ypress
-                self.cur_xlim -= dx
-                self.cur_ylim -= dy
-                 
-                self.ax.drag_pan(1, event.key, event.x, event.y)
-                fig.canvas.draw_idle()
- 
+# =============================================================================
+#             elif self.transform_state == "Normal":
+#                 dx = event.xdata - self.xpress
+#                 dy = event.ydata - self.ypress
+#                 self.cur_xlim -= dx
+#                 self.cur_ylim -= dy
+#                  
+#                 self.ax.drag_pan(1, event.key, event.x, event.y)
+#               #  fig.canvas.draw_idle()
+#  
+# =============================================================================
   
         def zoom(event):
             cur_xlim = self.ax.get_xlim()
