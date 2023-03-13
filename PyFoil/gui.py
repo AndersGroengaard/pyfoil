@@ -43,16 +43,12 @@ customtkinter.set_default_color_theme("./pyfoil_theme.json")
 
 
 
-import matplotlib as mpl
-#mpl.use('Qt5Agg')
-#mpl.use('TkAgg')
-#mpl.use('Agg')
-
+#import matplotlib as mpl
+ 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backend_bases import MouseButton
 
-from matplotlib.backends.backend_tkagg import (
-    FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 import matplotlib.pyplot as plt
 from matplotlib import backend_bases
@@ -60,21 +56,26 @@ from matplotlib import backend_bases
 #from mpl_interactions import ioff, panhandler, zoom_factory
 import numpy as np
 #import mplcursors
-from foils import NACA
+from foils import NACA, DataFoil
 
 import AUlibrary as au
     
 class FoilFrame(customtkinter.CTkFrame):
     def __init__(self, master, name, foil_id, **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(fg_color=au.RGBtoHex(au.AUlightblue))
-        # add widgets onto the frame...
+        self.pack_propagate(0)
+ #       self.configure(fg_color=au.RGBtoHex(au.AUlightblue))
+# =============================================================================
+#         self.width=60
+#         self.corner_radius = 5
         self.id = foil_id
         self.name = name
+#         
         self.label = customtkinter.CTkLabel(self)
         self.label.configure(text=self.name)
-        self.label.grid(row=0, column=0, padx=0)
-
+        self.label.pack()
+# 
+# =============================================================================
 
 class MyFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -115,7 +116,7 @@ class App(customtkinter.CTk):
         self.my_frame.grid(row=0, column=1, rowspan=3, padx=5, pady=0, sticky="nsew")
    
         self.add_foil_plot(self.my_frame)
-      #  self.figcanvas, self.ax = add_foil_plot(self.my_frame)
+ 
         self.figcanvas.get_tk_widget().pack(fill='both', expand=True)#.grid(row=0, column=0, sticky=tkinter.E+tkinter.W+tkinter.N+tkinter.S)
     
         # create main entry and button
@@ -483,23 +484,36 @@ class App(customtkinter.CTk):
             
     def add_foil(self):
         
-        name = "NACA7412"
+        name = "s1210"
+        if foiltype == "datafoil":
+            foil = DataFoil(name)
+            
+        elif foiltype == "naca":
+            foil = NACA(name, n_pts=100)
+            name = "NACA "+name
         
-        foil = NACA("7412", n_pts=100)
+        
+        
         foil_plot = self.ax.fill(foil.pts[:,0], foil.pts[:,1], color=self.unselected_color, alpha=0.25, zorder=3)    
         
         self.foil_objs[foil.id] = {"foil":foil , "foil_plot": foil_plot[0]}
  
         self.ax.figure.canvas.draw()
-        
-        fframe = FoilFrame(self.scrollable_frame, name, foil.id)
-        fframe.pack(#anchor=tk.N, 
-                    fill=tk.BOTH, 
-                    expand=True, 
-                    pady=(5, 0),
-                    padx=(25, 0)
-                  #  side=tk.LEFT
-                    )
+     #   foil_frame = customtkinter.CTkFrame(self.scrollable_frame, height=25, corner_radius=5)
+        foil_frame = FoilFrame(self.scrollable_frame, name, foil.id, height=28, corner_radius=5)
+        foil_frame.configure(fg_color="#373737")
+        foil_frame.pack(expand=True, pady=(5, 0), padx=(5, 5))
+# =============================================================================
+#         fframe = FoilFrame(self.scrollable_frame, name, foil.id)
+#         fframe.grid_columnconfigure(0, weight=1)
+#         fframe.pack(#anchor=tk.N, 
+#                   #  fill=tk.BOTH, 
+#              #       expand=True, 
+#                     pady=(5, 0),
+#                     padx=(5, 5),
+#                    # side=tk.LEFT
+#                     )
+# =============================================================================
  
     
  
