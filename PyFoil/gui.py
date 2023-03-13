@@ -30,7 +30,7 @@
 
 
 
-import tkinter
+import tkinter as tk
 #import tkinter.messagebox
 import customtkinter
 #import types
@@ -59,9 +59,18 @@ import numpy as np
 #import mplcursors
 from foils import NACA
 
-
+import AUlibrary as au
     
-
+class FoilFrame(customtkinter.CTkFrame):
+    def __init__(self, master, name, foil_id, **kwargs):
+        super().__init__(master, **kwargs)
+        self.configure(fg_color=au.RGBtoHex(au.AUlightblue))
+        # add widgets onto the frame...
+        self.id = foil_id
+        self.name = name
+        self.label = customtkinter.CTkLabel(self)
+        self.label.configure(text=self.name)
+        self.label.grid(row=0, column=0, padx=0)
 
 
 class MyFrame(customtkinter.CTkFrame):
@@ -74,8 +83,8 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.draggable_foils = []     # Initializing the foils list variable
-        self.foil_objs = {}     # Initializing the foils obj dict variable
+        self.draggable_foils = []                                              # Initializing the foils list variable
+        self.foil_objs = {}                                                    # Initializing the foils obj dict variable
         # configure window
         self.title("PyFoil - Multi Element Airfoil Maker")
         self.geometry(f"{1100}x{580}")
@@ -118,34 +127,25 @@ class App(customtkinter.CTk):
         self.scrollable_frame = customtkinter.CTkScrollableFrame(self)#, label_text="Foils")
         self.scrollable_frame.grid(row=0, column=3, rowspan=3, padx=(0, 0), pady=(5, 0), sticky="nsew")
         self.scrollable_frame.grid_columnconfigure(0, weight=1)
-        self.scrollable_frame_switches = []
-    #    for i in range(100):
-     ##       switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=f"CTkSwitch {i}")
-    #        switch.grid(row=i, column=0, padx=10, pady=(0, 20))
-  #          self.scrollable_frame_switches.append(switch)
+        self.scrollable_frame_foils = []
 
         self.add_foil_button = customtkinter.CTkButton(self.scrollable_frame, command=self.add_foil)
         self.add_foil_button.configure(text="Add Foil")
-        self.add_foil_button.grid(row=0, column=0, padx=10, pady=(0, 20))
+        self.add_foil_button.pack()
         
         
-        # set default values
-        #self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
- 
-      #  self.scrollable_frame_switches[0].select()
-      #  self.scrollable_frame_switches[4].select()
-      
+
       
      
 
     
     def add_foil_plot(self, widget=None):
         """
-        ---------------------------------------------------------------------------
-        | Creates the base foil plot with layout and theme colors                 |
-        | If a tkinter widget is supplied as input, it will be packed onto        |
-        | that widget. If nothing is supplied it will plot as normally.           |
-        ---------------------------------------------------------------------------
+        -----------------------------------------------------------------------
+        | Creates the base foil plot with layout and theme colors             |
+        | If a tkinter widget is supplied as input, it will be packed onto    |
+        | that widget. If nothing is supplied it will plot as normally.       |
+        -----------------------------------------------------------------------
         """
         import matplotlib.style as mplstyle
         
@@ -303,16 +303,13 @@ class App(customtkinter.CTk):
                 f.set_animated(False)
                 
         def onMotion(event):
-           # print("Moving")
+ 
             if self.press is None: 
                 if self.transform_state == "Rotation":    
-                   # delta_x = event.xdata - self.rotOx
-                  #  delta_y = event.ydata - self.rotOy
-                    
-                   # theta = np.arctan((event.xdata - self.rotOx) / (event.ydata - self.rotOy))   
+      
                     theta = math.atan2((event.ydata - self.rotOy) , (event.xdata - self.rotOx))   
                     if self.theta_old != None:
-                #        d_alpha = theta-self.theta_old
+ 
                         d_alpha = self.theta_old - theta
                         new_xy = self.rotate_around_point_highperf(self.rotxy, d_alpha, self.rotOx, self.rotOy)
                         self.clicked_foil.set_xy(new_xy)
@@ -325,7 +322,7 @@ class App(customtkinter.CTk):
                     scaling_distance = math.sqrt( (abs(event.xdata - self.scaleOx))**2 + (abs(event.ydata - self.scaleOy))**2)
                         
                     if self.scaling_distance_old != None:
-                    #    print("scale")
+           
                         s = scaling_distance/self.scaling_distance_old
                         new_xy = self.scalexy.copy()
                         new_xy[:,0] = new_xy[:,0] - self.scaleOx
@@ -333,9 +330,7 @@ class App(customtkinter.CTk):
                         new_xy = new_xy * s
                         new_xy[:,0] = new_xy[:,0] + self.scaleOx
                         new_xy[:,1] = new_xy[:,1] + self.scaleOy
-                        
-                #        new_xy = s*(self.scalexy-cp)+cp
-                        
+     
                         self.clicked_foil.set_xy(new_xy) 
                         blit_foil()
                         
@@ -466,33 +461,54 @@ class App(customtkinter.CTk):
             v.remove()
             del self.foil_objs[_id] 
             self.ax.figure.canvas.draw()
-            
+            self.clicked_foil = None
+        self._selected_geometry.clear()
             
     def add_foil(self):
         
+        name = "NACA7412"
+        
         foil = NACA("7412", n_pts=100)
-
-        foil_plot = self.ax.fill(foil.pts[:,0], foil.pts[:,1], color=self.unselected_color, alpha=0.25, zorder=3)  
+        foil_plot = self.ax.fill(foil.pts[:,0], foil.pts[:,1], color=self.unselected_color, alpha=0.25, zorder=3)    
         
         self.foil_objs[foil.id] = {"foil":foil , "foil_plot": foil_plot[0]}
  
         self.ax.figure.canvas.draw()
+        
+        fframe = FoilFrame(self.scrollable_frame, name, foil.id)
+        fframe.pack(#anchor=tk.N, 
+                    fill=tk.BOTH, 
+                    expand=True, 
+                    pady=(5, 0),
+                    padx=(25, 0)
+                  #  side=tk.LEFT
+                    )
  
-    def rotate_around_point_highperf(self, xy, radians, offset_x, offset_y):
-       """Rotate a point around a given point.
-       
-       I call this the "high performance" version since we're caching some
-       values that are needed >1 time. It's less readable than the previous
-       function but it's faster.
+    
+ 
+    def rotate_around_point_highperf(self, xy, radians, o_x, o_y):
+       """
+       ------------------------------------------------------------------------
+       | Rotate an array of points, xy, around a specific point (o_x, o_y)    |
+       | by theta (radians)                                                   |
+       ------------------------------------------------------------------------
+       |  INPUT:                                                              |
+       |     xy (array) : Array of points to be rotated, with x coordinates   |
+       |                  in column 0 and y-coordinates in column 1           |
+       |     radians (float) : The amount of radians that the points xy       |
+       |                       should be rotated.                             |
+       |     o_x (float) : x-coordinate for the offset point                  |
+       |     o_y (float) : y-coordinate for the offset point                  |
+       |______________________________________________________________________|
        """
      #  x, y = xy
    
-       adjusted_x = (xy[:,0] - offset_x)
-       adjusted_y = (xy[:,1] - offset_y)
+       adjusted_x = (xy[:,0] - o_x)
+       adjusted_y = (xy[:,1] - o_y)
        cos_rad = math.cos(radians)
        sin_rad = math.sin(radians)
-       xy[:,0] = offset_x + cos_rad * adjusted_x + sin_rad * adjusted_y
-       xy[:,1] = offset_y + -sin_rad * adjusted_x + cos_rad * adjusted_y
+       xy[:,0] = o_x + cos_rad * adjusted_x + sin_rad * adjusted_y
+       xy[:,1] = o_y + -sin_rad * adjusted_x + cos_rad * adjusted_y
    
        return xy
 
@@ -515,26 +531,13 @@ if __name__ == "__main__":
     
     
     import tracemalloc
- 
- 
 
-    # starting the monitoring
-    tracemalloc.start()
+    tracemalloc.start()    # starting the monitoring
      
-    
-    
-    
     app = App()
     app.mainloop()
-    
-    
-    
-    
 
- 
-     
-    # displaying the memory
-    print(tracemalloc.get_traced_memory()) #
+    print(tracemalloc.get_traced_memory()) # displaying the memory
      # 10-02-2023 21:36  -> (2767038, 2852662)
     # stopping the library
     tracemalloc.stop()
