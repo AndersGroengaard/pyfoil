@@ -209,8 +209,7 @@ foils.plot()
 If you have used PyFoil in your research, and you want to cite it, you could for example use the following BibLatex entry:
 
 ```
-@misc{agroengaard2023,
-  author = {Grøngaard, Anders},
+@misc{pyfoil2023,
   title = {PyFoil - Airfoil editing with Python},
   year = {2023},
   publisher = {GitHub},
@@ -219,11 +218,6 @@ If you have used PyFoil in your research, and you want to cite it, you could for
   }
 ```
 
-
- 
-<h2 id="authors"> :goal_net: AUTHORS </h2>
-
-Written by [@Agroengaard](https://github.com/Agroengaard)
 
 
 <br/>
