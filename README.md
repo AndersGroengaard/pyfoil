@@ -122,7 +122,11 @@ Foils are generated according to the definition from the  <a href="https://m-sel
  
  
  
- 
+ <h2 id="requirements">  Requirements  </h2>
+
+* Python 3.8+ 
+* Numpy 
+
  
  
   
