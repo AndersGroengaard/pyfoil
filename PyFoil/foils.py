@@ -540,6 +540,59 @@ class NACA(Foil):
 
  
 
+
+class Joukowski(Foil):
+    
+    """
+    source: This youtube video: https://www.youtube.com/watch?v=-7ZSHOWiy7g
+    """
+  
+    
+    def __init__(self, name="Joukowski", n_pts = 100, **kwargs):
+        super().__init__(name)
+
+
+        # Joukowski transform parameters
+        #self.name = "Joukowski"
+        self.origo = kwargs.get("circle_origo", (-0.15, 0.2 ))                 # Origo of Circle
+        self.Ox = self.origo[0]
+        self.Oy = self.origo[1]                                       
+        self.R = 1.2                                                           # Construction Circle radius 
+ 
+        self.epsilon = self.R - self.Ox - np.sqrt(self.R**2 -self.Oy**2)
+        self.c = (self.R-self.epsilon)
+        # ===== Joukoski transform curves ============================
+    
+
+        x = np.linspace(-self.R, self.R, n_pts) + self.Ox
+        yu = np.sqrt(self.R**2 - (x - self.Ox)**2) + self.Oy    # upper curve
+        yl = -np.sqrt(self.R**2 - (x - self.Ox)**2) + self.Oy   # lower curve
+    
+ 
+        zeta_u = x + yu * 1j   # Upper Curve  z = x + iy
+        zeta_l = x + yl * 1j   # Lower Curve  z = x + iy
+       
+        z_l = zeta_l + self.c**2 / zeta_l   # zeta plane curve zeta = z + 1 / z
+        z_u = zeta_u + self.c**2 / zeta_u
+
+     #   n = 1.94
+     #   z = n*b*(( (zeta+b)**n + (zeta-b)**n  )/( (zeta+b)**n - (zeta-b)**n )) # Kármán–Trefftz transform
+
+        Pts_x = np.append(np.flip(z_l.real), z_u.real[1:])
+        Pts_y = np.append(np.flip(z_l.imag), z_u.imag[1:])
+        Pts_z = np.zeros(np.size(Pts_y))                  # Initializing z-vector
+
+        self.base_pts = np.concatenate((Pts_x.T[:, None], 
+                               Pts_y.T[:, None], 
+                               Pts_z.T[:, None]), 
+                               axis=1)
+    
+        self.pts = self.base_pts
+
+
+j=Joukowski()
+j.plot()
+
 class Biconvex(Foil):
     
  

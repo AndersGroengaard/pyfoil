@@ -485,6 +485,8 @@ class App(customtkinter.CTk):
     def add_foil(self):
         
         name = "s1210"
+        foiltype = "datafoil"
+        
         if foiltype == "datafoil":
             foil = DataFoil(name)
             
