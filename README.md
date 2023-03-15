@@ -84,13 +84,18 @@ Use the GUI to create complicated airfoil layouts at lightning speed, like addin
 
 
 Amongst other things the GUI and the code supports:
-* <b> Generating one or more NACA Airfoils: </b>
- Currently the NACA foil families that can be generated are:
+* <b> Generating one or more analytical Airfoils: </b>
+ Currently the foil families that can be generated analytically are:
   - NACA 4-Digit
   - NACA 4-Digit Modified
   - NACA 5-Digit 
   - NACA 16-Series
-* Fetch historical airfoils
+  - Joukowski
+  - Biconvex
+  
+* <b> Fetch database airfoils: </b> The code contains a database of airfoils that you can import. These have byen obtained from:
+  - Webscraping the UIUC database
+  - Splining images from research articles
 * Create multi-element airfoils.  
   
 
